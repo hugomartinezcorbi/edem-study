@@ -3,7 +3,7 @@ import { ensureQuestionsForConcept } from "@/lib/study-engine";
 import type { ExamInsightsContent } from "@/lib/types";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 /** Fetches a fresh question per concept, different from the ones already asked (used in the VOLVER phase). */
 export async function POST(request: Request) {

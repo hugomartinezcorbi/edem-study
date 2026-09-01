@@ -4,7 +4,7 @@ import { ensureQuestionsForConcept, ensureSpacedRepetitionRows } from "@/lib/stu
 import type { NotesContent } from "@/lib/types";
 import { NextResponse } from "next/server";
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 const MAX_NEW_MATERIAL_CHARS = 120000;
 
