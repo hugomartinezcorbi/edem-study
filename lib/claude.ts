@@ -236,6 +236,148 @@ Responde con: {"explanation": string}`;
   return callClaudeJson<{ explanation: string }>(system, prompt, 1000);
 }
 
+export interface ModerationVerdict {
+  score: number;
+  decision: "approve" | "review" | "reject";
+  reason: string;
+  flags: string[];
+}
+
+export async function moderateContent(params: {
+  content: string;
+  contentType: string;
+  communityName: string;
+}): Promise<ModerationVerdict> {
+  const system =
+    "Eres un moderador de contenido para una comunidad académica universitaria. Respondes ÚNICAMENTE con JSON.";
+
+  const prompt = `Analiza este contenido publicado en una comunidad académica universitaria.
+
+CONTENIDO: ${params.content}
+TIPO: ${params.contentType}
+CONTEXTO: Comunidad de la asignatura ${params.communityName} en una app de estudio universitario
+
+Evalúa:
+1. ¿Es el contenido relevante para el contexto académico?
+2. ¿Es respetuoso y constructivo?
+3. ¿Contiene spam, publicidad, contenido ofensivo o inapropiado?
+4. ¿Es útil para la comunidad?
+
+Responde con:
+{
+  "score": 0-1 (1 = perfectamente aceptable),
+  "decision": "approve" | "review" | "reject",
+  "reason": "explicación breve de la decisión",
+  "flags": ["spam" | "offensive" | "off_topic" | "low_quality" | "none"]
+}
+
+Criterios:
+- score >= 0.85 y sin flags problemáticos → "approve"
+- score entre 0.5 y 0.85 → "review"
+- score < 0.5 → "reject"`;
+
+  return callClaudeJson<ModerationVerdict>(system, prompt, 500);
+}
+
+export interface PdfSectionDraft {
+  title: string;
+  content: string;
+  definitions: { term: string; definition: string }[];
+  formulas: string[];
+  examples: { title: string; content: string }[];
+  keyPoints: string[];
+  reviewQuestions: string[];
+}
+
+export interface PdfGenerationDraft {
+  title: string;
+  subject: string;
+  topics: string[];
+  style: string;
+  generatedAt: string;
+  sourceCount: number;
+  content: {
+    tableOfContents: { title: string; page: number; subsections?: string[] }[];
+    sections: PdfSectionDraft[];
+    glossary: { term: string; definition: string }[];
+    summary: string;
+  };
+}
+
+const STYLE_LABELS: Record<string, string> = {
+  resumen_ejecutivo: "Resumen ejecutivo — breve, solo puntos clave",
+  apuntes_completos: "Apuntes completos — explicaciones detalladas con ejemplos",
+  guia_estudio: "Guía de estudio — orientado a preparar examen, con preguntas de repaso",
+  esquema: "Esquema — estructura jerárquica sin mucho texto",
+};
+
+export async function generateMixedSourcePdf(params: {
+  title: string;
+  subjectName: string;
+  topics: string[];
+  style: string;
+  language: string;
+  include: { definitions: boolean; formulas: boolean; examples: boolean; reviewQuestions: boolean; glossary: boolean; tableOfContents: boolean };
+  sources: { label: string; content: string }[];
+}): Promise<PdfGenerationDraft> {
+  const system =
+    "Eres un asistente académico experto en crear apuntes universitarios de alta calidad a partir de múltiples fuentes. Respondes ÚNICAMENTE con JSON válido.";
+
+  const sourcesBlock = params.sources
+    .map((s, i) => `--- FUENTE ${i + 1}: ${s.label} ---\n${s.content}`)
+    .join("\n\n");
+
+  const includeList = Object.entries(params.include)
+    .filter(([, v]) => v)
+    .map(([k]) => k)
+    .join(", ");
+
+  const prompt = `ASIGNATURA: ${params.subjectName}
+TEMA(S): ${params.topics.join(", ") || "(no especificado)"}
+ESTILO SOLICITADO: ${STYLE_LABELS[params.style] ?? params.style}
+IDIOMA: ${params.language}
+INCLUIR: ${includeList || "contenido básico"}
+
+CONTENIDO FUENTE (recopilado de múltiples orígenes — apuntes personales, apuntes de compañeros, discusiones en chat, publicaciones del foro, documentos subidos):
+
+${sourcesBlock}
+
+INSTRUCCIONES:
+1. Analiza TODO el contenido proporcionado de todas las fuentes.
+2. Identifica los conceptos clave, elimina duplicados y contradicciones.
+3. Si hay información contradictoria entre fuentes, usa la que parezca más precisa y rigurosa académicamente.
+4. Genera unos apuntes UNIFICADOS según el estilo solicitado.
+5. Deben ser académicamente rigurosos, bien estructurados, con explicaciones claras, ejemplos prácticos cuando ayuden, fórmulas correctamente formateadas (LaTeX, sin $$), sin información redundante, y con el tono/profundidad del estilo elegido.
+
+Responde con un único objeto JSON con esta forma exacta:
+{
+  "title": "${params.title}",
+  "subject": "${params.subjectName}",
+  "topics": ${JSON.stringify(params.topics)},
+  "style": "${params.style}",
+  "generatedAt": "fecha ISO",
+  "sourceCount": ${params.sources.length},
+  "content": {
+    "tableOfContents": [{"title": string, "page": number, "subsections": string[]}],
+    "sections": [
+      {
+        "title": string,
+        "content": string (markdown),
+        "definitions": [{"term": string, "definition": string}],
+        "formulas": string[],
+        "examples": [{"title": string, "content": string}],
+        "keyPoints": string[],
+        "reviewQuestions": string[]
+      }
+    ],
+    "glossary": [{"term": string, "definition": string}],
+    "summary": "resumen final de 1 párrafo"
+  }
+}`;
+
+  return callClaudeJson<PdfGenerationDraft>(system, prompt, 16000);
+}
+
 export async function evaluateStudentExplanation(params: {
   conceptDefinition: string;
   studentExplanation: string;
