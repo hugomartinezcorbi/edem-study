@@ -3,33 +3,55 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
+  --background: #f4f4f5;
   --surface: #ffffff;
-  --surface-hover: #f1f5f9;
-  --border: #e2e8f0;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --accent: #3d7a91;
+  --surface-hover: #f2f5f7;
+  --border: #d8dde0;
+  --foreground: #1b1b1f;
+  --heading: #16232a;
+  --muted: #71717a;
+  --muted-light: #a1a1aa;
+  --accent: #0e84a8;
   --accent-foreground: #ffffff;
-  --edem-teal: #3d7a91;
+  --edem-teal: #0e84a8;
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #d97706;
+
+  --fallar-bg: #fdeeee;
+  --fallar-text: #c0453d;
+  --estudiar-bg: #fdf3e6;
+  --estudiar-text: #c0812a;
+  --explicar-bg: #e9f4f8;
+  --explicar-text: #0b6e8c;
+  --volver-bg: #f2faf6;
+  --volver-text: #1c7a5e;
 }
 
 .dark {
-  --background: #0b1120;
-  --surface: #131c31;
-  --surface-hover: #1a2540;
-  --border: #253150;
-  --foreground: #e5e9f5;
-  --muted: #8a94ad;
-  --accent: #6fb3cc;
+  --background: #101418;
+  --surface: #161c21;
+  --surface-hover: #1c2429;
+  --border: #262f35;
+  --foreground: #e8eaec;
+  --heading: #f1f3f4;
+  --muted: #9a9fa5;
+  --muted-light: #6c7278;
+  --accent: #3ba7cc;
   --accent-foreground: #0b1120;
-  --edem-teal: #6fb3cc;
+  --edem-teal: #3ba7cc;
   --success: #4ade80;
   --danger: #f87171;
   --warning: #fbbf24;
+
+  --fallar-bg: #2b1b1a;
+  --fallar-text: #e08a83;
+  --estudiar-bg: #2c2418;
+  --estudiar-text: #e0ac6c;
+  --explicar-bg: #16262b;
+  --explicar-text: #6cc3dd;
+  --volver-bg: #16261f;
+  --volver-text: #6fcba6;
 }
 
 @theme inline {
@@ -38,20 +60,41 @@
   --color-surface-hover: var(--surface-hover);
   --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
   --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-edem-teal: var(--edem-teal);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
-  --font-sans: var(--font-inter);
+
+  --color-fallar-bg: var(--fallar-bg);
+  --color-fallar-text: var(--fallar-text);
+  --color-estudiar-bg: var(--estudiar-bg);
+  --color-estudiar-text: var(--estudiar-text);
+  --color-explicar-bg: var(--explicar-bg);
+  --color-explicar-text: var(--explicar-text);
+  --color-volver-bg: var(--volver-bg);
+  --color-volver-text: var(--volver-text);
+
+  --font-sans: var(--font-instrument-sans);
+  --font-heading: var(--font-space-grotesk);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  color: var(--color-heading);
 }
 
 * {
@@ -68,6 +111,33 @@ body {
 }
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Uppercase mono caption style used for small labels/eyebrows throughout the app */
+.label-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-light);
+}
+
+/* Faint teal grid pattern for hero/panel backgrounds */
+.dotted-grid {
+  background-image: repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent) 4%, transparent) 0px,
+      color-mix(in srgb, var(--color-accent) 4%, transparent) 1px,
+      transparent 1px,
+      transparent 64px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--color-accent) 4%, transparent) 0px,
+      color-mix(in srgb, var(--color-accent) 4%, transparent) 1px,
+      transparent 1px,
+      transparent 64px
+    );
 }
 
 .prose-notes h1,

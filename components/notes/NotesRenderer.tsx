@@ -71,7 +71,7 @@ export function NotesRenderer({
     <div className="grid lg:grid-cols-[220px_1fr] gap-8">
       <aside className="hidden lg:block">
         <div className="sticky top-20 space-y-1 text-sm">
-          <p className="text-xs font-semibold text-muted uppercase mb-2">Índice</p>
+          <p className="label-mono mb-2">Índice</p>
           {notes.topics.map((t) => (
             <a
               key={t.id}
@@ -177,7 +177,7 @@ export function NotesRenderer({
 
               {topic.practiceQuestions.length > 0 && (
                 <div className="rounded-xl bg-surface-hover p-4">
-                  <p className="text-xs font-semibold text-muted uppercase mb-2">Preguntas de repaso</p>
+                  <p className="label-mono mb-2">Preguntas de repaso</p>
                   <ul className="space-y-1 text-sm list-disc pl-4">
                     {topic.practiceQuestions.map((q, j) => (
                       <li key={j}>{q}</li>

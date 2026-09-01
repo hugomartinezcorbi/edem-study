@@ -22,13 +22,13 @@ export function EdemLogo({
     : light
       ? "/edem-mark-light.svg"
       : "/edem-mark.svg";
-  const aspectRatio = showTagline ? 420 / 150 : 420 / 90;
+  const aspectRatio = showTagline ? 460 / 150 : 460 / 90;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
-      alt="EDEM Escuela de Empresarios"
+      alt="MI EDEM"
       width={width}
       height={Math.round(width / aspectRatio)}
       className={cn("block", className)}

@@ -46,8 +46,8 @@ export default async function DashboardPage() {
       <Card className="bg-accent text-accent-foreground border-none">
         <CardBody className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="text-sm opacity-80">Lo que toca hoy</p>
-            <p className="text-3xl font-bold mt-1">
+            <p className="label-mono !text-white/70">Lo que toca hoy</p>
+            <p className="text-3xl font-bold font-heading mt-1">
               {data.dueTodayCount} {data.dueTodayCount === 1 ? "concepto" : "conceptos"} pendientes de repaso
             </p>
           </div>
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
               <CardBody className="flex items-center gap-3">
                 <TrendingUp className="text-success" size={20} />
                 <div>
-                  <p className="text-xs text-muted">Asignatura más fuerte</p>
+                  <p className="label-mono">Asignatura más fuerte</p>
                   <p className="font-medium">{data.strongestSubject}</p>
                 </div>
               </CardBody>
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
               <CardBody className="flex items-center gap-3">
                 <TrendingDown className="text-danger" size={20} />
                 <div>
-                  <p className="text-xs text-muted">Necesita más repaso</p>
+                  <p className="label-mono">Necesita más repaso</p>
                   <p className="font-medium">{data.weakestSubject}</p>
                 </div>
               </CardBody>
@@ -127,8 +127,8 @@ function StatCard({ label, value, small }: { label: string; value: string; small
   return (
     <Card>
       <CardBody>
-        <p className="text-xs text-muted">{label}</p>
-        <p className={`font-bold mt-1 ${small ? "text-base truncate" : "text-2xl"}`}>{value}</p>
+        <p className="label-mono">{label}</p>
+        <p className={`font-bold font-heading mt-1 ${small ? "text-base truncate" : "text-2xl"}`}>{value}</p>
       </CardBody>
     </Card>
   );

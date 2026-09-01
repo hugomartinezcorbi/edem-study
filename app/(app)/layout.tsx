@@ -21,10 +21,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center gap-2">
             <EdemLogo size="sm" showTagline={false} />
-            <span className="text-sm text-muted hidden sm:inline">Study</span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-sm text-muted mr-1">{name}</span>
+            <span className="hidden sm:inline font-mono text-xs text-muted-light mr-1">{name}</span>
             <ThemeToggle />
             <LogoutButton />
           </div>

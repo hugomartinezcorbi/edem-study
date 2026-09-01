@@ -231,24 +231,36 @@ export function StudySession({
     );
   }
 
-  const phaseSteps: { key: Stage; label: string }[] = [
-    { key: "fallar", label: "Fallar" },
-    { key: "estudiar", label: "Estudiar" },
-    { key: "explicar", label: "Explicar" },
-    { key: "volver", label: "Volver" },
+  const phaseSteps: { key: Stage; label: string; bg: string; text: string }[] = [
+    { key: "fallar", label: "Fallar", bg: "var(--color-fallar-bg)", text: "var(--color-fallar-text)" },
+    { key: "estudiar", label: "Estudiar", bg: "var(--color-estudiar-bg)", text: "var(--color-estudiar-text)" },
+    { key: "explicar", label: "Explicar", bg: "var(--color-explicar-bg)", text: "var(--color-explicar-text)" },
+    { key: "volver", label: "Volver", bg: "var(--color-volver-bg)", text: "var(--color-volver-text)" },
   ];
   const currentPhaseIdx = phaseSteps.findIndex((p) => p.key === stage);
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {currentPhaseIdx >= 0 && (
-        <div className="flex items-center gap-2">
-          {phaseSteps.map((p, i) => (
-            <div key={p.key} className="flex-1">
-              <p className={`text-xs text-center mb-1 font-medium ${i === currentPhaseIdx ? "text-accent" : "text-muted"}`}>{p.label}</p>
-              <div className={`h-1.5 rounded-full ${i <= currentPhaseIdx ? "bg-accent" : "bg-surface-hover"}`} />
-            </div>
-          ))}
+        <div className="flex gap-2">
+          {phaseSteps.map((p, i) => {
+            const active = i <= currentPhaseIdx;
+            return (
+              <div
+                key={p.key}
+                className={`flex-1 text-center py-2 rounded-[10px] font-heading text-sm font-bold transition-opacity ${
+                  active ? "" : "opacity-40"
+                } ${i === currentPhaseIdx ? "ring-2 ring-offset-1 ring-offset-background" : ""}`}
+                style={
+                  active
+                    ? { backgroundColor: p.bg, color: p.text, ...(i === currentPhaseIdx ? ({ "--tw-ring-color": p.text } as React.CSSProperties) : {}) }
+                    : { backgroundColor: "var(--color-surface-hover)", color: "var(--color-muted)" }
+                }
+              >
+                {p.label}
+              </div>
+            );
+          })}
         </div>
       )}
 

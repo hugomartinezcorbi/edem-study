@@ -35,11 +35,11 @@ export function ExamInsightsPanel({ insights }: { insights: ExamInsightsContent 
 
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-xs font-semibold text-muted uppercase mb-1">Estilo de las preguntas</p>
+            <p className="label-mono mb-1">Estilo de las preguntas</p>
             <p>{insights.questionStyleNotes}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted uppercase mb-1">Dificultad</p>
+            <p className="label-mono mb-1">Dificultad</p>
             <p>{insights.difficultyProfile}</p>
           </div>
         </div>
