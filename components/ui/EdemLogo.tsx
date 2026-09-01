@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 
+const widths = { sm: 110, md: 170, lg: 280 };
+
 export function EdemLogo({
   className,
   variant = "default",
@@ -11,32 +13,25 @@ export function EdemLogo({
   showTagline?: boolean;
   size?: "sm" | "md" | "lg";
 }) {
-  const wordmarkSize = { sm: "text-lg", md: "text-2xl", lg: "text-4xl" }[size];
-  const taglineSize = { sm: "text-[9px]", md: "text-[11px]", lg: "text-sm" }[size];
+  const width = widths[size];
+  const light = variant === "light";
+  const src = showTagline
+    ? light
+      ? "/edem-logo-light.svg"
+      : "/edem-logo.svg"
+    : light
+      ? "/edem-mark-light.svg"
+      : "/edem-mark.svg";
+  const aspectRatio = showTagline ? 420 / 150 : 420 / 90;
 
   return (
-    <div className={cn("flex flex-col leading-none select-none", className)}>
-      <span
-        className={cn("font-bold", wordmarkSize)}
-        style={{
-          fontFamily: 'Georgia, "Times New Roman", Times, serif',
-          letterSpacing: "0.16em",
-          color: variant === "light" ? "#ffffff" : "var(--color-edem-teal)",
-        }}
-      >
-        EDEM
-      </span>
-      {showTagline && (
-        <span
-          className={cn("uppercase mt-1", taglineSize)}
-          style={{
-            letterSpacing: "0.08em",
-            color: variant === "light" ? "rgba(255,255,255,0.75)" : "var(--muted)",
-          }}
-        >
-          Escuela de Empresarios
-        </span>
-      )}
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt="EDEM Escuela de Empresarios"
+      width={width}
+      height={Math.round(width / aspectRatio)}
+      className={cn("block", className)}
+    />
   );
 }
