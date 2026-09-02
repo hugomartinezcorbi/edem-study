@@ -23,10 +23,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     data: { user },
   } = await supabase.auth.getUser();
 
-  const project = await getProject(supabase, id);
+  const [project, applications] = await Promise.all([
+    getProject(supabase, id),
+    getProjectApplications(supabase, id, user?.id),
+  ]);
   if (!project) notFound();
 
-  const applications = await getProjectApplications(supabase, id, user?.id);
   const isCreator = user?.id === project.creator_id;
   const myApplication = user ? applications.find((a) => a.applicant_id === user.id) : undefined;
   const publicApplications = applications.filter((a) => a.status !== "rejected" || a.applicant_id === user?.id || isCreator);

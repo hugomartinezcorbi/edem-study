@@ -16,8 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/");
 
-  await supabase.rpc("ensure_own_profile");
-  const unreadCount = await getUnreadCount(supabase, user.id);
+  const [, unreadCount] = await Promise.all([supabase.rpc("ensure_own_profile"), getUnreadCount(supabase, user.id)]);
 
   const name = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "Estudiante";
 
