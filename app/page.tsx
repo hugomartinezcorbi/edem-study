@@ -1,6 +1,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { EdemLogo } from "@/components/ui/EdemLogo";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { getSocialAdoptionPercent } from "@/lib/queries/landing";
 import { redirect } from "next/navigation";
 
 const PHASES = [
@@ -17,6 +18,9 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   if (user) redirect("/dashboard");
+
+  const serviceRole = await createServiceRoleClient();
+  const adoptionPercent = await getSocialAdoptionPercent(serviceRole);
 
   return (
     <main className="flex-1 grid lg:grid-cols-2 bg-background">
@@ -65,11 +69,11 @@ export default async function Home() {
           </div>
 
           <div className="bg-surface border border-border rounded-2xl p-5 shadow-[0_20px_50px_rgba(20,40,50,0.07)] space-y-2">
-            <p className="label-mono">Apuntes generados</p>
+            <p className="label-mono">Comunidad EDEM</p>
             <div className="h-1.5 w-full rounded-full bg-surface-hover overflow-hidden">
-              <div className="h-full rounded-full bg-accent" style={{ width: "59%" }} />
+              <div className="h-full rounded-full bg-accent" style={{ width: `${adoptionPercent}%` }} />
             </div>
-            <p className="text-xs font-mono text-muted">59% de conceptos dominados · v7</p>
+            <p className="text-xs font-mono text-muted">{adoptionPercent}% de estudiantes ya participan</p>
           </div>
         </div>
       </div>
