@@ -53,7 +53,8 @@ export function subscribeToNotifications(db: DB, userId: string, onInsert: (payl
     )
     .subscribe();
 
-  return () => {
-    db.removeChannel(channel);
+  return {
+    channel,
+    unsubscribe: () => db.removeChannel(channel),
   };
 }

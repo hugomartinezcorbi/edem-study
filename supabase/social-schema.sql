@@ -53,6 +53,41 @@ create trigger on_auth_user_created_profile
   after insert on auth.users
   for each row execute function public.handle_new_user_profile();
 
+-- Backfill helper for users who signed up before this migration ran.
+-- Safe to call every request: it's a no-op once the row exists.
+create or replace function public.ensure_own_profile()
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  base_username text;
+  final_username text;
+  suffix int := 0;
+  auth_email text;
+begin
+  if auth.uid() is null then
+    return;
+  end if;
+  if exists (select 1 from public.user_profiles where id = auth.uid()) then
+    return;
+  end if;
+
+  select email into auth_email from auth.users where id = auth.uid();
+  base_username := regexp_replace(split_part(coalesce(auth_email, 'user'), '@', 1), '[^a-zA-Z0-9_]', '', 'g');
+  if base_username = '' then base_username := 'user'; end if;
+  final_username := base_username;
+  while exists (select 1 from public.user_profiles where username = final_username) loop
+    suffix := suffix + 1;
+    final_username := base_username || suffix::text;
+  end loop;
+
+  insert into public.user_profiles (id, username, display_name)
+  values (auth.uid(), final_username, base_username)
+  on conflict (id) do nothing;
+end;
+$$;
+
 -- ─────────────────────────────────────────────────────────────────────────
 -- community_subjects — shared spaces distinct from a user's personal subjects
 -- ─────────────────────────────────────────────────────────────────────────
