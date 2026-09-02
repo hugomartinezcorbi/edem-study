@@ -25,6 +25,9 @@ export function AuthForm() {
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (fullName.trim().split(/\s+/).length < 2) {
+          throw new Error("Introduce tu nombre y apellidos");
+        }
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,

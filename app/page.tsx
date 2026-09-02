@@ -31,14 +31,14 @@ export default async function Home() {
               Estudia lo que importa.
             </h1>
             <p className="text-muted leading-relaxed">
-              Apuntes que se generan solos y un método de estudio que te hace fallar, entender y recordar. Para
-              ADE en EDEM.
+              Apuntes que se generan solos y un método de estudio que te hace fallar, entender y recordar.
+              Contenido exclusivo para estudiantes de EDEM.
             </p>
           </div>
 
           <AuthForm />
 
-          <p className="font-mono text-xs text-muted-light">EDEM · ADE · Primer curso · 10 asignaturas</p>
+          <p className="font-mono text-xs text-muted-light">EDEM · ADE · ADE + IG · Primer curso</p>
         </div>
       </div>
 

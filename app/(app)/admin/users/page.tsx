@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody } from "@/components/ui/Card";
 import { UserActionButtons } from "@/components/admin/UserActionButtons";
+import { Download } from "lucide-react";
 
 export default async function AdminUsersPage() {
   const supabase = await requireAdmin();
@@ -13,7 +14,15 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted">{users.length} usuarios</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted">{users.length} usuarios</p>
+        <a
+          href="/api/admin/users/export"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+        >
+          <Download size={14} /> Exportar a Excel
+        </a>
+      </div>
       {users.map((u) => (
         <Card key={u.id}>
           <CardBody className="flex flex-wrap items-center justify-between gap-3">
