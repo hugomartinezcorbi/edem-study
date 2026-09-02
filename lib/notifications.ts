@@ -9,12 +9,15 @@ export async function notify(
   params: { userId: string; type: NotificationType; title: string; body: string; link?: string }
 ) {
   if (!params.userId) return;
-  await db.from("notifications").insert({
-    user_id: params.userId,
-    type: params.type,
-    title: params.title,
-    body: params.body,
-    link: params.link ?? null,
+  // Uses a security-definer RPC because the acting user's own session (not the
+  // recipient's) performs this insert — a plain insert would be rejected by
+  // the "own notifications" RLS policy on public.notifications.
+  await db.rpc("create_notification", {
+    p_user_id: params.userId,
+    p_type: params.type,
+    p_title: params.title,
+    p_body: params.body,
+    p_link: params.link ?? null,
   });
 }
 

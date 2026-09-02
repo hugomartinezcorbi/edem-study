@@ -137,6 +137,8 @@ const TABLE_BY_TYPE: Record<ModerationContentType, string> = {
   post: "posts",
   comment: "post_comments",
   shared_note: "shared_notes",
+  project: "projects",
+  project_application: "project_applications",
 };
 
 /** Applies the moderation_status column on the underlying content row to match an admin's decision. */

@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/Input";
 import { CommunityCard } from "@/components/community/CommunityCard";
 import { CreateCommunityModal } from "@/components/community/CreateCommunityModal";
 import type { CommunitySubject } from "@/lib/types";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trophy } from "lucide-react";
 
 export function CommunityExplorer({
   initialCommunities,
@@ -37,9 +38,17 @@ export function CommunityExplorer({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-heading font-bold">Comunidades</h1>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} /> Crear comunidad
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/ranking"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium text-muted hover:text-foreground hover:bg-surface-hover transition-colors"
+          >
+            <Trophy size={16} /> Ranking
+          </Link>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus size={16} /> Crear comunidad
+          </Button>
+        </div>
       </div>
 
       <div className="relative max-w-md">

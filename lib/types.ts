@@ -304,6 +304,43 @@ export interface PostComment {
   replies?: PostComment[];
 }
 
+export type ProjectCategory = "startup" | "app" | "proyecto" | "investigacion" | "otro";
+export type ProjectStatus = "open" | "closed";
+export type ProjectApplicationStatus = "pending" | "accepted" | "rejected";
+
+export interface Project {
+  id: string;
+  creator_id: string;
+  title: string;
+  tagline: string;
+  description: string;
+  category: ProjectCategory;
+  looking_for: string[];
+  status: ProjectStatus;
+  member_count: number;
+  applications_count: number;
+  moderation_status: ModerationStatus;
+  is_deleted: boolean;
+  created_at: string;
+  // joined
+  creator?: UserProfile;
+}
+
+export interface ProjectApplication {
+  id: string;
+  project_id: string;
+  applicant_id: string;
+  pitch: string;
+  status: ProjectApplicationStatus;
+  likes_count: number;
+  moderation_status: ModerationStatus;
+  created_at: string;
+  decided_at: string | null;
+  // joined
+  applicant?: UserProfile;
+  my_like?: boolean;
+}
+
 export interface SharedNote {
   id: string;
   user_id: string;
@@ -390,7 +427,9 @@ export type NotificationType =
   | "comment"
   | "rating"
   | "download"
-  | "moderation";
+  | "moderation"
+  | "project_application"
+  | "project_decision";
 
 export interface AppNotification {
   id: string;
@@ -403,7 +442,7 @@ export interface AppNotification {
   created_at: string;
 }
 
-export type ModerationContentType = "chat_message" | "post" | "comment" | "shared_note";
+export type ModerationContentType = "chat_message" | "post" | "comment" | "shared_note" | "project" | "project_application";
 export type AiDecision = "auto_approved" | "needs_review" | "auto_rejected";
 
 export interface ModerationQueueItem {

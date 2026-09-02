@@ -14,6 +14,8 @@ const TYPE_LABEL: Record<string, string> = {
   post: "Publicación",
   comment: "Comentario",
   shared_note: "Apuntes compartidos",
+  project: "Proyecto",
+  project_application: "Solicitud de proyecto",
 };
 
 export function ModerationQueueList({ items }: { items: ModerationQueueItem[] }) {
