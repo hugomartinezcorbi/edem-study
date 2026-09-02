@@ -136,6 +136,13 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- Depth > 1 means this UPDATE was itself fired by another trigger (e.g. the
+  -- likes-count maintenance trigger below reacting to a like insert/delete) —
+  -- trust those. Only a direct top-level UPDATE (depth 1, the RLS-checked
+  -- client statement) needs to be restricted to status-only changes.
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
   if new.project_id is distinct from old.project_id
      or new.applicant_id is distinct from old.applicant_id
      or new.pitch is distinct from old.pitch
@@ -214,6 +221,12 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- Same reasoning as guard_project_application_update: allow cascaded
+  -- updates from the applications_count/member_count maintenance triggers,
+  -- only restrict a direct top-level UPDATE on this table.
+  if pg_trigger_depth() > 1 then
+    return new;
+  end if;
   if new.creator_id is distinct from old.creator_id
      or new.member_count is distinct from old.member_count
      or new.applications_count is distinct from old.applications_count
