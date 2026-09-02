@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { moderateAndLog } from "@/lib/moderation";
+import { getUserModerationStatus, moderateAndLog } from "@/lib/moderation";
 import { notify, notifyMentions } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
@@ -26,6 +26,9 @@ export async function POST(request: Request) {
   ]);
   if (!membership) return NextResponse.json({ error: "Únete a la comunidad para escribir" }, { status: 403 });
 
+  const status = await getUserModerationStatus(supabase, user.id);
+  if (status.banned) return NextResponse.json({ error: "Tu cuenta no puede publicar" }, { status: 403 });
+
   const { visible, aiDecision } = await moderateAndLog(supabase, {
     contentType: "chat_message",
     contentId: crypto.randomUUID(),
@@ -33,6 +36,7 @@ export async function POST(request: Request) {
     communitySubjectId: communityId,
     content: content ?? fileName ?? "archivo adjunto",
     communityName: community?.name ?? "",
+    forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";
 

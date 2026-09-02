@@ -215,6 +215,7 @@ export interface CommunitySubject {
   degree: string | null;
   description: string | null;
   member_count: number;
+  is_archived: boolean;
   created_at: string;
   created_by: string | null;
 }

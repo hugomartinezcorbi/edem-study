@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProfileById } from "@/lib/queries/profile";
+import { isAdminId } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { EditProfileButton } from "@/components/profile/EditProfileButton";
 import { NoteCard } from "@/components/shared-notes/NoteCard";
+import Link from "next/link";
 
 export default async function MyProfilePage() {
   const supabase = await createClient();
@@ -34,6 +36,14 @@ export default async function MyProfilePage() {
           </div>
         </section>
       )}
+
+      {isAdminId(user.id) && (
+        <Link href="/admin" className="block text-sm text-accent hover:underline">
+          Panel de administración →
+        </Link>
+      )}
+
+      <p className="text-xs text-muted-light font-mono">ID de usuario: {user.id}</p>
     </div>
   );
 }

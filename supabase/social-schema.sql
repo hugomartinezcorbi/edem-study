@@ -98,6 +98,7 @@ create table if not exists public.community_subjects (
   degree text,
   description text,
   member_count int not null default 0,
+  is_archived boolean not null default false,
   created_at timestamptz not null default now(),
   created_by uuid references public.user_profiles(id) on delete set null
 );
@@ -466,7 +467,7 @@ create policy "profiles viewable by everyone" on public.user_profiles for select
 create policy "users update own profile" on public.user_profiles for update using (auth.uid() = id);
 create policy "users insert own profile" on public.user_profiles for insert with check (auth.uid() = id);
 
-create policy "communities viewable by everyone" on public.community_subjects for select using (true);
+create policy "communities viewable by everyone" on public.community_subjects for select using (not is_archived);
 create policy "authenticated can create communities" on public.community_subjects for insert with check (auth.uid() is not null);
 create policy "admins can update own community" on public.community_subjects for update using (
   exists (select 1 from public.community_memberships m where m.community_subject_id = id and m.user_id = auth.uid() and m.role in ('admin', 'moderator'))
