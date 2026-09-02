@@ -1,0 +1,73 @@
+import { cn } from "@/lib/utils";
+import type { ChatMessage as ChatMessageType } from "@/lib/types";
+import { FileAttachment } from "@/components/chat/FileAttachment";
+import { Pin, Reply } from "lucide-react";
+
+export function ChatMessage({
+  message,
+  isOwn,
+  onReply,
+  canPin,
+  onTogglePin,
+}: {
+  message: ChatMessageType;
+  isOwn: boolean;
+  onReply: (message: ChatMessageType) => void;
+  canPin: boolean;
+  onTogglePin: (message: ChatMessageType) => void;
+}) {
+  if (message.moderation_status === "rejected") return null;
+
+  return (
+    <div className={cn("group flex gap-2.5 px-1", isOwn && "flex-row-reverse")}>
+      <div className="h-8 w-8 rounded-full bg-surface-hover flex items-center justify-center text-xs font-heading font-bold shrink-0 overflow-hidden">
+        {message.author?.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={message.author.avatar_url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          (message.author?.display_name ?? "?").slice(0, 1).toUpperCase()
+        )}
+      </div>
+
+      <div className={cn("max-w-[75%] space-y-1", isOwn && "items-end flex flex-col")}>
+        <div className={cn("flex items-baseline gap-2 text-xs", isOwn && "flex-row-reverse")}>
+          <span className="font-medium">{message.author?.display_name ?? "Usuario"}</span>
+          <span className="text-muted-light font-mono">
+            {new Date(message.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+          {message.is_pinned && <Pin size={11} className="text-warning" />}
+        </div>
+
+        {message.moderation_status === "pending" && !isOwn ? null : (
+          <div
+            className={cn(
+              "rounded-2xl px-3.5 py-2 text-sm",
+              isOwn ? "bg-accent text-accent-foreground" : "bg-surface-hover text-foreground"
+            )}
+          >
+            {message.moderation_status === "pending" && (
+              <p className="text-xs opacity-70 mb-1">Pendiente de aprobación</p>
+            )}
+            {message.content && <p className="whitespace-pre-wrap break-words">{message.content}</p>}
+            {message.file_url && message.file_name && (
+              <div className="mt-1">
+                <FileAttachment url={message.file_url} name={message.file_name} type={message.message_type} />
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 text-xs text-muted">
+          <button onClick={() => onReply(message)} className="flex items-center gap-1 cursor-pointer hover:text-foreground">
+            <Reply size={12} /> Responder
+          </button>
+          {canPin && (
+            <button onClick={() => onTogglePin(message)} className="flex items-center gap-1 cursor-pointer hover:text-foreground">
+              <Pin size={12} /> {message.is_pinned ? "Desfijar" : "Fijar"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

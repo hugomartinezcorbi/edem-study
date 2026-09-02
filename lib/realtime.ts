@@ -37,8 +37,9 @@ export function subscribeToChat(
     })
     .subscribe();
 
-  return () => {
-    db.removeChannel(channel);
+  return {
+    channel,
+    unsubscribe: () => db.removeChannel(channel),
   };
 }
 

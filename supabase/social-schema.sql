@@ -427,6 +427,7 @@ create policy "users can join communities" on public.community_memberships for i
 create policy "users can leave communities" on public.community_memberships for delete using (auth.uid() = user_id);
 
 create policy "members read chat" on public.chat_messages for select using (
+  (moderation_status = 'approved' or auth.uid() = user_id) and
   exists (select 1 from public.community_memberships m where m.community_subject_id = chat_messages.community_subject_id and m.user_id = auth.uid())
 );
 create policy "members write chat" on public.chat_messages for insert with check (
@@ -435,7 +436,9 @@ create policy "members write chat" on public.chat_messages for insert with check
 );
 create policy "authors edit own chat messages" on public.chat_messages for update using (auth.uid() = user_id);
 
-create policy "posts readable by everyone" on public.posts for select using (true);
+create policy "posts readable by everyone" on public.posts for select using (
+  moderation_status = 'approved' or auth.uid() = user_id
+);
 create policy "members create posts" on public.posts for insert with check (
   auth.uid() = user_id and
   exists (select 1 from public.community_memberships m where m.community_subject_id = posts.community_subject_id and m.user_id = auth.uid())
@@ -448,12 +451,16 @@ create policy "members vote" on public.post_votes for insert with check (auth.ui
 create policy "users change own vote" on public.post_votes for update using (auth.uid() = user_id);
 create policy "users remove own vote" on public.post_votes for delete using (auth.uid() = user_id);
 
-create policy "post comments readable" on public.post_comments for select using (true);
+create policy "post comments readable" on public.post_comments for select using (
+  moderation_status = 'approved' or auth.uid() = user_id
+);
 create policy "members comment" on public.post_comments for insert with check (auth.uid() = user_id);
 create policy "authors edit own comments" on public.post_comments for update using (auth.uid() = user_id);
 create policy "authors delete own comments" on public.post_comments for delete using (auth.uid() = user_id);
 
-create policy "shared notes readable by everyone" on public.shared_notes for select using (true);
+create policy "shared notes readable by everyone" on public.shared_notes for select using (
+  moderation_status = 'approved' or auth.uid() = user_id
+);
 create policy "members upload shared notes" on public.shared_notes for insert with check (
   auth.uid() = user_id and
   exists (select 1 from public.community_memberships m where m.community_subject_id = shared_notes.community_subject_id and m.user_id = auth.uid())
