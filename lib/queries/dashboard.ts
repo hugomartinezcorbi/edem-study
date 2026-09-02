@@ -17,6 +17,9 @@ export interface DashboardData {
   globalAccuracy: number | null;
   strongestSubject: string | null;
   weakestSubject: string | null;
+  totalConcepts: number;
+  totalMasteredConcepts: number;
+  documentVersions: number;
 }
 
 export async function getDashboardData(
@@ -129,6 +132,9 @@ export async function getDashboardData(
     }
   }
 
+  const totalConcepts = subjectCards.reduce((sum, s) => sum + s.totalConcepts, 0);
+  const totalMasteredConcepts = subjectCards.reduce((sum, s) => sum + s.masteredConcepts, 0);
+
   return {
     subjects: subjectCards,
     dueTodayCount: dueTodayCount ?? 0,
@@ -138,5 +144,8 @@ export async function getDashboardData(
     globalAccuracy,
     strongestSubject,
     weakestSubject,
+    totalConcepts,
+    totalMasteredConcepts,
+    documentVersions: documents?.length ?? 0,
   };
 }

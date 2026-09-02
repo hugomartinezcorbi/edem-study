@@ -73,6 +73,19 @@ export default async function DashboardPage() {
         />
       </div>
 
+      {data.totalConcepts > 0 && (
+        <Card>
+          <CardBody className="space-y-2">
+            <p className="label-mono">Apuntes generados</p>
+            <ProgressBar value={data.totalMasteredConcepts / data.totalConcepts} />
+            <p className="text-xs font-mono text-muted">
+              {Math.round((data.totalMasteredConcepts / data.totalConcepts) * 100)}% de conceptos dominados
+              {data.documentVersions > 0 && ` · v${data.documentVersions}`}
+            </p>
+          </CardBody>
+        </Card>
+      )}
+
       {(data.strongestSubject || data.weakestSubject) && (
         <div className="grid sm:grid-cols-2 gap-4">
           {data.strongestSubject && (
