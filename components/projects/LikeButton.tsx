@@ -26,11 +26,18 @@ export function LikeButton({
     setLiked(next);
     setLikes((n) => n + (next ? 1 : -1));
     try {
-      await fetch("/api/projects/like", {
+      const res = await fetch("/api/projects/like", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ applicationId }),
       });
+      if (!res.ok) {
+        setLiked(!next);
+        setLikes((n) => n - (next ? 1 : -1));
+      }
+    } catch {
+      setLiked(!next);
+      setLikes((n) => n - (next ? 1 : -1));
     } finally {
       setLoading(false);
     }
@@ -40,6 +47,7 @@ export function LikeButton({
     <button
       onClick={toggle}
       disabled={disabled}
+      title={disabled ? "No puedes valorar tu propia propuesta" : undefined}
       className={cn(
         "inline-flex items-center gap-1.5 text-sm font-medium transition-colors",
         disabled ? "text-muted-light cursor-not-allowed" : "cursor-pointer hover:text-accent",

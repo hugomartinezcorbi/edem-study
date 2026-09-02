@@ -10,6 +10,16 @@ export async function POST(request: Request) {
 
   const { applicationId } = await request.json();
 
+  const { data: application } = await supabase
+    .from("project_applications")
+    .select("applicant_id")
+    .eq("id", applicationId)
+    .maybeSingle();
+  if (!application) return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
+  if (application.applicant_id === user.id) {
+    return NextResponse.json({ error: "No puedes valorar tu propia propuesta" }, { status: 400 });
+  }
+
   const { data: existing } = await supabase
     .from("project_application_likes")
     .select("id")

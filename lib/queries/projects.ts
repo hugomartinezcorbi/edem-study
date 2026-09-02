@@ -10,7 +10,7 @@ export async function listProjects(db: DB, query?: string): Promise<Project[]> {
     .select("*, creator:user_profiles(*)")
     .eq("moderation_status", "approved")
     .eq("is_deleted", false)
-    .order("status", { ascending: true })
+    .order("status", { ascending: false }) // "open" sorts after "closed" lexicographically — open projects first
     .order("created_at", { ascending: false })
     .limit(50);
   if (query?.trim()) q = q.ilike("title", `%${query.trim()}%`);

@@ -124,6 +124,35 @@ create trigger on_project_application_decision
   before update of status on public.project_applications
   for each row execute function public.handle_project_application_decision();
 
+-- The "creators decide on applications" RLS policy below only has a USING
+-- clause (which Postgres also applies as the implicit WITH CHECK), so it lets
+-- a project creator UPDATE any column on an application to their own
+-- project, not just status — e.g. rewriting an applicant's pitch via a raw
+-- PostgREST request. This trigger closes that gap: only status (and the
+-- decided_at the trigger above sets) may actually change.
+create or replace function public.guard_project_application_update()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if new.project_id is distinct from old.project_id
+     or new.applicant_id is distinct from old.applicant_id
+     or new.pitch is distinct from old.pitch
+     or new.likes_count is distinct from old.likes_count
+     or new.moderation_status is distinct from old.moderation_status
+     or new.created_at is distinct from old.created_at then
+    raise exception 'only the application status may be changed this way';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_project_application_update_guard on public.project_applications;
+create trigger on_project_application_update_guard
+  before update on public.project_applications
+  for each row execute function public.guard_project_application_update();
+
 create or replace function public.update_project_application_likes_count()
 returns trigger
 language plpgsql
@@ -151,12 +180,56 @@ create trigger on_project_application_like_change
   after insert or delete on public.project_application_likes
   for each row execute function public.update_project_application_likes_count();
 
+-- Belt-and-suspenders alongside the API-level check: nobody can like their own pitch.
+create or replace function public.prevent_self_like_application()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if exists (select 1 from public.project_applications where id = new.application_id and applicant_id = new.user_id) then
+    raise exception 'cannot like your own application';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_project_application_like_guard on public.project_application_likes;
+create trigger on_project_application_like_guard
+  before insert on public.project_application_likes
+  for each row execute function public.prevent_self_like_application();
+
 -- ─────────────────────────────────────────────────────────────────────────
 -- Row Level Security
 -- ─────────────────────────────────────────────────────────────────────────
 alter table public.projects enable row level security;
 alter table public.project_applications enable row level security;
 alter table public.project_application_likes enable row level security;
+
+-- Same reasoning as the application update guard above: the creator-update
+-- policy only has a USING clause, so lock down which columns it may touch.
+create or replace function public.guard_project_update()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if new.creator_id is distinct from old.creator_id
+     or new.member_count is distinct from old.member_count
+     or new.applications_count is distinct from old.applications_count
+     or new.moderation_status is distinct from old.moderation_status
+     or new.is_deleted is distinct from old.is_deleted
+     or new.created_at is distinct from old.created_at then
+    raise exception 'not allowed to change this field';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_project_update_guard on public.projects;
+create trigger on_project_update_guard
+  before update on public.projects
+  for each row execute function public.guard_project_update();
 
 create policy "projects readable by everyone" on public.projects for select using (
   (moderation_status = 'approved' and not is_deleted) or auth.uid() = creator_id

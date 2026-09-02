@@ -5,12 +5,10 @@ import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, Mail } from "lucide-react";
 
 export function AuthForm() {
   const router = useRouter();
   const supabase = createClient();
-  const [step, setStep] = useState<"choose" | "form">("choose");
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -58,14 +56,6 @@ export function AuthForm() {
     }
   }
 
-  async function handleGoogle() {
-    setError(null);
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-  }
-
   if (checkEmail) {
     return (
       <div className="text-center space-y-2">
@@ -77,29 +67,8 @@ export function AuthForm() {
     );
   }
 
-  if (step === "choose") {
-    return (
-      <div className="space-y-3">
-        <Button className="w-full" size="lg" onClick={handleGoogle} type="button">
-          <span className="font-heading font-semibold">G</span> Continuar con Google
-        </Button>
-        <Button variant="outline" className="w-full" size="lg" onClick={() => setStep("form")} type="button">
-          <Mail size={16} /> Continuar con email
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-5">
-      <button
-        onClick={() => setStep("choose")}
-        className="flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
-        type="button"
-      >
-        <ArrowLeft size={14} /> Atrás
-      </button>
-
       <div className="flex rounded-xl bg-surface-hover p-1">
         {(["login", "signup"] as const).map((m) => (
           <button

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProject, getProjectApplications } from "@/lib/queries/projects";
 import { ApplyBox } from "@/components/projects/ApplyBox";
 import { ApplicationCard } from "@/components/projects/ApplicationCard";
+import { ProjectStatusToggle } from "@/components/projects/ProjectStatusToggle";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody } from "@/components/ui/Card";
 import { notFound } from "next/navigation";
@@ -28,7 +29,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const applications = await getProjectApplications(supabase, id, user?.id);
   const isCreator = user?.id === project.creator_id;
   const myApplication = user ? applications.find((a) => a.applicant_id === user.id) : undefined;
-  const publicApplications = applications.filter((a) => a.status !== "rejected" || a.applicant_id === user?.id);
+  const publicApplications = applications.filter((a) => a.status !== "rejected" || a.applicant_id === user?.id || isCreator);
 
   const canApply = user && !isCreator && !myApplication && project.status === "open";
 
@@ -52,6 +53,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <FileText size={13} /> {project.applications_count} solicitudes
           </span>
         </div>
+        {isCreator && (
+          <div>
+            <ProjectStatusToggle projectId={project.id} status={project.status} />
+          </div>
+        )}
       </div>
 
       <Card>
