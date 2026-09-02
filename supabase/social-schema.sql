@@ -395,6 +395,21 @@ create trigger on_note_download_change
   after update of download_count on public.shared_notes
   for each row execute function public.reward_note_download();
 
+-- Lets any authenticated reader register a download without needing broad
+-- UPDATE rights on shared_notes (which stay owner-only via RLS).
+create or replace function public.increment_note_downloads(p_note_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not authorized';
+  end if;
+  update public.shared_notes set download_count = download_count + 1 where id = p_note_id;
+end;
+$$;
+
 -- ─────────────────────────────────────────────────────────────────────────
 -- Row Level Security
 -- ─────────────────────────────────────────────────────────────────────────
