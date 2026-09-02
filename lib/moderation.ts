@@ -77,7 +77,7 @@ export async function moderateAndLog(
 
   const hitBlocked = config.blockedKeywords.find((k) => lowerContent.includes(k));
   if (hitBlocked) {
-    await db.from("moderation_queue").insert({
+    const { error: blockLogError } = await db.from("moderation_queue").insert({
       content_type: params.contentType,
       content_id: params.contentId,
       user_id: params.userId,
@@ -87,6 +87,7 @@ export async function moderateAndLog(
       ai_reason: `Contiene la palabra bloqueada "${hitBlocked}"`,
       ai_score: 0,
     });
+    if (blockLogError) console.error("moderation_queue insert failed:", blockLogError.message);
     return { visible: false, aiDecision: "auto_rejected" };
   }
 
@@ -112,7 +113,7 @@ export async function moderateAndLog(
         ? "auto_rejected"
         : "needs_review";
 
-  await db.from("moderation_queue").insert({
+  const { error: logError } = await db.from("moderation_queue").insert({
     content_type: params.contentType,
     content_id: params.contentId,
     user_id: params.userId,
@@ -126,6 +127,7 @@ export async function moderateAndLog(
         : verdict.reason,
     ai_score: verdict.score,
   });
+  if (logError) console.error("moderation_queue insert failed:", logError.message);
 
   return { visible: aiDecision === "auto_approved", aiDecision };
 }

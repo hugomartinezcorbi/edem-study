@@ -348,6 +348,7 @@ INSTRUCCIONES:
 3. Si hay información contradictoria entre fuentes, usa la que parezca más precisa y rigurosa académicamente.
 4. Genera unos apuntes UNIFICADOS según el estilo solicitado.
 5. Deben ser académicamente rigurosos, bien estructurados, con explicaciones claras, ejemplos prácticos cuando ayuden, fórmulas correctamente formateadas (LaTeX, sin $$), sin información redundante, y con el tono/profundidad del estilo elegido.
+6. Sé conciso: máximo 5 secciones, cada una con un párrafo o dos de contenido. Prioriza claridad y densidad de información sobre extensión — nada de relleno.
 
 Responde con un único objeto JSON con esta forma exacta:
 {
@@ -375,7 +376,7 @@ Responde con un único objeto JSON con esta forma exacta:
   }
 }`;
 
-  return callClaudeJson<PdfGenerationDraft>(system, prompt, 16000);
+  return callClaudeJson<PdfGenerationDraft>(system, prompt, 6000);
 }
 
 export async function evaluateStudentExplanation(params: {

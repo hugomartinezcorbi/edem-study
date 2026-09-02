@@ -527,7 +527,12 @@ create policy "own pdf generations" on public.pdf_generations for all using (aut
 
 create policy "own notifications" on public.notifications for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- moderation_queue / moderation_rules: no public policies — service role (admin API routes) only.
+-- moderation_queue / moderation_rules: read/write for regular users stays locked down
+-- (admin API routes use the service role), but the moderation pipeline itself runs as
+-- the authenticated author, so it needs narrow access: log its own verdicts, and read
+-- the active rules to know the current thresholds/keywords.
+create policy "users can log their own moderation verdicts" on public.moderation_queue for insert with check (auth.uid() = user_id);
+create policy "authenticated users can read active rules" on public.moderation_rules for select using (auth.uid() is not null and is_active);
 
 -- ─────────────────────────────────────────────────────────────────────────
 -- Realtime
