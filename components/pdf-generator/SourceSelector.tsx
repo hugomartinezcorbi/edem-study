@@ -212,7 +212,7 @@ export function SourceSelector({ ownSubjects, communities, selected, onChange, f
         <input
           ref={fileInputRef}
           type="file"
-          accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg"
+          accept=".pdf,.docx,.pptx"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -225,7 +225,7 @@ export function SourceSelector({ ownSubjects, communities, selected, onChange, f
           disabled={uploading}
           className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm text-muted hover:border-accent hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
         >
-          <Upload size={15} /> {uploading ? "Extrayendo texto…" : "PDF, Word, PowerPoint o foto"}
+          <Upload size={15} /> {uploading ? "Extrayendo texto…" : "PDF, Word o PowerPoint"}
         </button>
         {uploadError && <p className="text-xs text-danger">{uploadError}</p>}
         {uploadedFiles.length > 0 && (

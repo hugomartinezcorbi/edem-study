@@ -17,7 +17,15 @@ export async function POST(request: Request) {
 
   const fileType = inferFileType(file.name, file.type);
   if (fileType === "other") {
-    return NextResponse.json({ error: "Formato no compatible (usa PDF, DOCX, PPTX o imagen)" }, { status: 400 });
+    return NextResponse.json({ error: "Formato no compatible (usa PDF, DOCX o PPTX)" }, { status: 400 });
+  }
+  if (fileType === "image") {
+    // OCR (tesseract.js) reliably exceeds the 60s serverless limit here — reject fast
+    // instead of leaving the request to hang and time out with a 504.
+    return NextResponse.json(
+      { error: "Las imágenes no están soportadas aquí todavía — usa PDF, DOCX o PPTX" },
+      { status: 400 }
+    );
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
