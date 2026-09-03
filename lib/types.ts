@@ -371,7 +371,7 @@ export interface NoteRating {
   created_at: string;
 }
 
-export type PdfSourceType = "own_notes" | "shared_note" | "chat_message" | "post" | "document" | "free_text";
+export type PdfSourceType = "own_notes" | "shared_note" | "chat_message" | "post" | "document" | "free_text" | "uploaded_file";
 
 export interface PdfSourceMaterial {
   type: PdfSourceType;

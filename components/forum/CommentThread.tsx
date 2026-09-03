@@ -50,6 +50,9 @@ function CommentItem({ comment, postId, depth }: { comment: PostComment; postId:
       <div className="py-3 space-y-1.5">
         <div className="flex items-center gap-2 text-xs">
           <span className="font-medium">{comment.author?.display_name}</span>
+          {comment.author?.degree && (
+            <span className="text-muted-light font-mono uppercase">{comment.author.degree}</span>
+          )}
           <span className="text-muted-light font-mono">{new Date(comment.created_at).toLocaleDateString("es-ES")}</span>
           {comment.moderation_status === "pending" && <span className="text-warning">Pendiente</span>}
         </div>

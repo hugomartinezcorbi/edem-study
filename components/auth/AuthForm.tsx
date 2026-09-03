@@ -11,6 +11,7 @@ export function AuthForm() {
   const supabase = createClient();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [fullName, setFullName] = useState("");
+  const [degree, setDegree] = useState<"ADE" | "IGE">("ADE");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,14 +31,16 @@ export function AuthForm() {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { full_name: fullName, degree },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
         if (signUpError) throw signUpError;
 
         if (data.session) {
-          await supabase.rpc("seed_edem_subjects", { p_user_id: data.user!.id });
+          await supabase.rpc(degree === "IGE" ? "seed_ige_subjects" : "seed_edem_subjects", {
+            p_user_id: data.user!.id,
+          });
           router.push("/dashboard");
           router.refresh();
         } else {
@@ -85,12 +88,31 @@ export function AuthForm() {
 
       <form onSubmit={handleSubmit} className="space-y-3">
         {mode === "signup" && (
-          <Input
-            placeholder="Nombre completo"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            required
-          />
+          <>
+            <Input
+              placeholder="Nombre completo"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted">¿Qué estudias?</p>
+              <div className="flex rounded-xl bg-surface-hover p-1">
+                {(["ADE", "IGE"] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDegree(d)}
+                    className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors cursor-pointer ${
+                      degree === d ? "bg-surface shadow-sm text-foreground" : "text-muted"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         )}
         <Input
           type="email"

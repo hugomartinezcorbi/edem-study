@@ -26,6 +26,9 @@ export function ApplicationCard({
           <p className="font-medium">
             {application.applicant?.display_name}{" "}
             <span className="text-muted text-sm">@{application.applicant?.username}</span>
+            {application.applicant?.degree && (
+              <span className="text-muted-light text-xs font-mono uppercase ml-1.5">{application.applicant.degree}</span>
+            )}
             {isOwnApplication && <span className="text-xs text-accent ml-1.5">(tú)</span>}
           </p>
           <Badge

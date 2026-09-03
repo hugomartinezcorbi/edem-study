@@ -32,6 +32,9 @@ export function ChatMessage({
       <div className={cn("max-w-[75%] space-y-1", isOwn && "items-end flex flex-col")}>
         <div className={cn("flex items-baseline gap-2 text-xs", isOwn && "flex-row-reverse")}>
           <span className="font-medium">{message.author?.display_name ?? "Usuario"}</span>
+          {message.author?.degree && (
+            <span className="text-muted-light font-mono uppercase">{message.author.degree}</span>
+          )}
           <span className="text-muted-light font-mono">
             {new Date(message.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
           </span>

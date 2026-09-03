@@ -4,8 +4,8 @@ import { Textarea } from "@/components/ui/Input";
 import type { OwnSubjectOption } from "@/lib/queries/pdf-generator";
 import type { JoinedCommunity } from "@/lib/queries/community";
 import type { PdfSourceMaterial } from "@/lib/types";
-import { useEffect, useState } from "react";
-import { Search, Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Search, Star, Upload, X } from "lucide-react";
 
 interface Props {
   ownSubjects: OwnSubjectOption[];
@@ -27,6 +27,9 @@ export function SourceSelector({ ownSubjects, communities, selected, onChange, f
   const [chatQuery, setChatQuery] = useState("");
   const [chatResults, setChatResults] = useState<{ id: string; content: string; user_profiles: { display_name: string } | null }[]>([]);
   const [chatSelectedIds, setChatSelectedIds] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!communityId) return;
@@ -68,6 +71,26 @@ export function SourceSelector({ ownSubjects, communities, selected, onChange, f
         ? [...withoutChat, { type: "chat_message", id: next.join(","), label: `${next.length} mensajes del chat` }]
         : withoutChat
     );
+  }
+
+  const uploadedFiles = selected.filter((s) => s.type === "uploaded_file");
+
+  async function handleFileUpload(file: File) {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/pdf/extract-upload", { method: "POST", body: formData });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Error al subir el archivo");
+      onChange([...selected, { type: "uploaded_file", id: crypto.randomUUID(), label: body.filename, text: body.text }]);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Error al subir el archivo");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   return (
@@ -183,6 +206,45 @@ export function SourceSelector({ ownSubjects, communities, selected, onChange, f
           </div>
         </section>
       )}
+
+      <section className="space-y-2">
+        <p className="label-mono">Sube tu propio archivo</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileUpload(file);
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm text-muted hover:border-accent hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+        >
+          <Upload size={15} /> {uploading ? "Extrayendo texto…" : "PDF, Word, PowerPoint o foto"}
+        </button>
+        {uploadError && <p className="text-xs text-danger">{uploadError}</p>}
+        {uploadedFiles.length > 0 && (
+          <div className="space-y-1">
+            {uploadedFiles.map((f) => (
+              <div key={f.id} className="flex items-center justify-between gap-2 text-sm py-1 pl-1 text-muted">
+                <span className="truncate">{f.label}</span>
+                <button
+                  type="button"
+                  onClick={() => onChange(selected.filter((s) => s.id !== f.id))}
+                  className="text-muted-light hover:text-danger cursor-pointer shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="space-y-2">
         <p className="label-mono">Texto libre (opcional)</p>

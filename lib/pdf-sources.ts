@@ -27,6 +27,16 @@ export async function resolveSources(
       continue;
     }
 
+    if (source.type === "uploaded_file") {
+      if (source.text?.trim()) {
+        resolved.push({
+          label: source.label ?? "Archivo subido",
+          content: source.text.slice(0, MAX_CHARS_PER_SOURCE),
+        });
+      }
+      continue;
+    }
+
     if (source.type === "own_notes") {
       const { data } = await db.from("notes").select("content").eq("id", source.id).maybeSingle();
       if (data?.content) {

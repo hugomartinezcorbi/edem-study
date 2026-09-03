@@ -10,7 +10,8 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && data.user) {
-      await supabase.rpc("seed_edem_subjects", { p_user_id: data.user.id });
+      const degree = data.user.user_metadata?.degree;
+      await supabase.rpc(degree === "IGE" ? "seed_ige_subjects" : "seed_edem_subjects", { p_user_id: data.user.id });
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

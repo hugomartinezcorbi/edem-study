@@ -35,7 +35,10 @@ export function PostCard({ post, communityId }: { post: Post; communityId: strin
             <p className="font-semibold leading-snug">{post.title}</p>
             <p className="text-sm text-muted line-clamp-2">{post.content}</p>
             <div className="flex items-center gap-3 text-xs text-muted pt-1">
-              <span>{post.author?.display_name}</span>
+              <span>
+                {post.author?.display_name}
+                {post.author?.degree && <span className="text-muted-light uppercase"> · {post.author.degree}</span>}
+              </span>
               <span className="font-mono text-muted-light">
                 {new Date(post.created_at).toLocaleDateString("es-ES")}
               </span>
