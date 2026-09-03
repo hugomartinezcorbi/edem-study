@@ -10,6 +10,14 @@ export function inferFileType(filename: string, mimeType: string): FileType {
 }
 
 async function extractPdf(buffer: Buffer): Promise<string> {
+  // pdf-parse's bundled pdf.js worker references DOMMatrix, which doesn't exist in the
+  // Node.js runtime (only in browsers). @napi-rs/canvas — already a pdf-parse dependency —
+  // ships a compatible polyfill; without it every PDF extraction fails at runtime.
+  if (typeof (globalThis as { DOMMatrix?: unknown }).DOMMatrix === "undefined") {
+    const { DOMMatrix } = await import("@napi-rs/canvas");
+    (globalThis as { DOMMatrix?: unknown }).DOMMatrix = DOMMatrix;
+  }
+
   const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: buffer });
   try {
