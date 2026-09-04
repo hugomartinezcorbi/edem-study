@@ -8,7 +8,6 @@ const TABS = [
   { href: "/admin/queue", label: "Cola de moderación" },
   { href: "/admin/history", label: "Historial" },
   { href: "/admin/users", label: "Usuarios" },
-  { href: "/admin/communities", label: "Comunidades" },
   { href: "/admin/rules", label: "Reglas" },
 ];
 

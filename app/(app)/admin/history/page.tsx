@@ -6,9 +6,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 
 const TYPE_LABEL: Record<string, string> = {
   chat_message: "Mensaje de chat",
-  post: "Publicación",
-  comment: "Comentario",
-  shared_note: "Apuntes compartidos",
+  project: "Proyecto",
+  project_application: "Solicitud de proyecto",
 };
 
 const DECISION_COLOR: Record<string, string> = {

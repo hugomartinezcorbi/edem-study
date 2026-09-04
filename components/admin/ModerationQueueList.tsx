@@ -4,16 +4,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import type { ModerationQueueItem } from "@/lib/types";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Check, ExternalLink, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 const TYPE_LABEL: Record<string, string> = {
   chat_message: "Mensaje de chat",
-  post: "Publicación",
-  comment: "Comentario",
-  shared_note: "Apuntes compartidos",
   project: "Proyecto",
   project_application: "Solicitud de proyecto",
 };
@@ -98,13 +94,6 @@ export function ModerationQueueList({ items }: { items: ModerationQueueItem[] })
                 <Button size="sm" variant="danger" onClick={() => decide(item.id, "rejected")} loading={loading === item.id}>
                   <X size={14} /> Rechazar
                 </Button>
-                {item.community_subject_id && (
-                  <Link href={`/community/${item.community_subject_id}`} target="_blank">
-                    <Button size="sm" variant="ghost">
-                      <ExternalLink size={14} /> Ver en contexto
-                    </Button>
-                  </Link>
-                )}
               </div>
             </CardBody>
           </Card>

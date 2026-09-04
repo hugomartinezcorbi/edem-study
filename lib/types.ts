@@ -208,34 +208,12 @@ export interface UserProfile {
   created_at: string;
 }
 
-export interface CommunitySubject {
-  id: string;
-  name: string;
-  university: string | null;
-  degree: string | null;
-  description: string | null;
-  member_count: number;
-  is_archived: boolean;
-  created_at: string;
-  created_by: string | null;
-}
-
-export type CommunityRole = "member" | "moderator" | "admin";
-
-export interface CommunityMembership {
-  id: string;
-  user_id: string;
-  community_subject_id: string;
-  role: CommunityRole;
-  joined_at: string;
-}
-
 export type ChatMessageType = "text" | "file" | "image" | "note_share";
 export type ModerationStatus = "approved" | "pending" | "rejected";
 
 export interface ChatMessage {
   id: string;
-  community_subject_id: string;
+  community_subject_id: string | null;
   user_id: string;
   content: string;
   message_type: ChatMessageType;
@@ -250,58 +228,6 @@ export interface ChatMessage {
   // joined
   author?: UserProfile;
   reply_to?: ChatMessage;
-}
-
-export type PostType = "apuntes" | "pregunta" | "recurso" | "discusion";
-
-export interface PostAttachment {
-  filename: string;
-  url: string;
-  type: string;
-}
-
-export interface Post {
-  id: string;
-  community_subject_id: string;
-  user_id: string;
-  title: string;
-  content: string;
-  post_type: PostType;
-  attachments: PostAttachment[];
-  upvotes: number;
-  downvotes: number;
-  comment_count: number;
-  is_pinned: boolean;
-  is_deleted: boolean;
-  moderation_status: ModerationStatus;
-  created_at: string;
-  edited_at: string | null;
-  // joined
-  author?: UserProfile;
-  my_vote?: "up" | "down" | null;
-}
-
-export interface PostVote {
-  id: string;
-  post_id: string;
-  user_id: string;
-  vote_type: "up" | "down";
-  created_at: string;
-}
-
-export interface PostComment {
-  id: string;
-  post_id: string;
-  user_id: string;
-  content: string;
-  reply_to_id: string | null;
-  upvotes: number;
-  is_deleted: boolean;
-  moderation_status: ModerationStatus;
-  created_at: string;
-  // joined
-  author?: UserProfile;
-  replies?: PostComment[];
 }
 
 export type ProjectCategory = "startup" | "app" | "proyecto" | "investigacion" | "otro";
@@ -341,84 +267,6 @@ export interface ProjectApplication {
   my_like?: boolean;
 }
 
-export interface SharedNote {
-  id: string;
-  user_id: string;
-  community_subject_id: string;
-  title: string;
-  description: string | null;
-  file_url: string;
-  extracted_text: string | null;
-  content_json: NotesContent | null;
-  download_count: number;
-  rating_average: number;
-  rating_count: number;
-  tags: string[];
-  is_approved: boolean;
-  moderation_status: ModerationStatus;
-  created_at: string;
-  // joined
-  author?: UserProfile;
-  my_rating?: number;
-}
-
-export interface NoteRating {
-  id: string;
-  shared_note_id: string;
-  user_id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-}
-
-export type PdfSourceType = "own_notes" | "shared_note" | "chat_message" | "post" | "document" | "free_text" | "uploaded_file";
-
-export interface PdfSourceMaterial {
-  type: PdfSourceType;
-  id: string;
-  label?: string;
-  text?: string; // used for free_text sources
-}
-
-export type PdfStyle = "resumen_ejecutivo" | "apuntes_completos" | "guia_estudio" | "esquema";
-
-export interface PdfContentSection {
-  title: string;
-  content: string;
-  definitions: { term: string; definition: string }[];
-  formulas: string[];
-  examples: { title: string; content: string }[];
-  keyPoints: string[];
-  reviewQuestions: string[];
-}
-
-export interface PdfContent {
-  title: string;
-  subject: string;
-  topics: string[];
-  style: PdfStyle;
-  generatedAt: string;
-  sourceCount: number;
-  content: {
-    tableOfContents: { title: string; page: number; subsections?: string[] }[];
-    sections: PdfContentSection[];
-    glossary: { term: string; definition: string }[];
-    summary: string;
-  };
-}
-
-export interface PdfGeneration {
-  id: string;
-  user_id: string;
-  subject_id: string | null;
-  community_subject_id: string | null;
-  title: string;
-  source_materials: PdfSourceMaterial[];
-  generated_pdf_url: string | null;
-  content_json: PdfContent | null;
-  created_at: string;
-}
-
 export type NotificationType =
   | "mention"
   | "reply"
@@ -442,7 +290,7 @@ export interface AppNotification {
   created_at: string;
 }
 
-export type ModerationContentType = "chat_message" | "post" | "comment" | "shared_note" | "project" | "project_application";
+export type ModerationContentType = "chat_message" | "project" | "project_application";
 export type AiDecision = "auto_approved" | "needs_review" | "auto_rejected";
 
 export interface ModerationQueueItem {

@@ -4,26 +4,25 @@ import type { ChatMessage } from "@/lib/types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DB = SupabaseClient<any, any, any>;
 
-export function chatChannelName(communitySubjectId: string) {
-  return `chat:${communitySubjectId}`;
+export function chatChannelName() {
+  return "chat:global";
 }
 
 export function notificationsChannelName(userId: string) {
   return `notifications:${userId}`;
 }
 
-/** Subscribes to new chat messages for a community; returns an unsubscribe function. */
+/** Subscribes to new global chat messages; returns an unsubscribe function. */
 export function subscribeToChat(
   db: DB,
-  communitySubjectId: string,
   onInsert: (message: ChatMessage) => void,
   onTypingSync?: (typingUserIds: string[]) => void
 ) {
   const channel = db
-    .channel(chatChannelName(communitySubjectId))
+    .channel(chatChannelName())
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "chat_messages", filter: `community_subject_id=eq.${communitySubjectId}` },
+      { event: "INSERT", schema: "public", table: "chat_messages" },
       (payload: { new: ChatMessage }) => onInsert(payload.new)
     )
     .on("presence", { event: "sync" }, () => {

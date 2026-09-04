@@ -1,10 +1,10 @@
 import { Card, CardBody } from "@/components/ui/Card";
 import { ReputationBadge } from "@/components/profile/ReputationBadge";
 import type { ProfilePageData } from "@/lib/queries/profile";
-import { BookOpen, GraduationCap, MessageSquare } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 
 export function ProfileCard({ data, isOwn }: { data: ProfilePageData; isOwn: boolean }) {
-  const { profile, stats } = data;
+  const { profile } = data;
   return (
     <Card>
       <CardBody className="space-y-4">
@@ -32,23 +32,6 @@ export function ProfileCard({ data, isOwn }: { data: ProfilePageData; isOwn: boo
             {[profile.university, profile.degree, profile.year ? `Curso ${profile.year}` : null].filter(Boolean).join(" · ")}
           </p>
         )}
-
-        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
-          <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-accent" />
-            <div>
-              <p className="font-heading font-bold">{stats.sharedNotesCount}</p>
-              <p className="text-xs text-muted">Apuntes</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <MessageSquare size={16} className="text-accent" />
-            <div>
-              <p className="font-heading font-bold">{stats.postsCount}</p>
-              <p className="text-xs text-muted">Publicaciones</p>
-            </div>
-          </div>
-        </div>
 
         {isOwn && (
           <p className="text-xs text-muted-light font-mono">

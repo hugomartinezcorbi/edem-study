@@ -4,7 +4,6 @@ import { isAdminId } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { EditProfileButton } from "@/components/profile/EditProfileButton";
-import { NoteCard } from "@/components/shared-notes/NoteCard";
 import Link from "next/link";
 
 export default async function MyProfilePage() {
@@ -25,17 +24,6 @@ export default async function MyProfilePage() {
       </div>
 
       <ProfileCard data={data} isOwn />
-
-      {data.topNotes.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="label-mono">Mis apuntes mejor valorados</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {data.topNotes.map((note) => (
-              <NoteCard key={note.id} note={note} />
-            ))}
-          </div>
-        </section>
-      )}
 
       {isAdminId(user.id) && (
         <Link href="/admin" className="block text-sm text-accent hover:underline">

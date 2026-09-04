@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUnreadCount } from "@/lib/queries/notifications";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { FileText, Users, Rocket } from "lucide-react";
+import { MessageCircle, Rocket } from "lucide-react";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -29,14 +29,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <EdemLogo size="sm" showTagline={false} />
             </Link>
             <nav className="hidden md:flex items-center gap-1">
-              <Link href="/community" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
-                <Users size={15} /> Comunidad
+              <Link href="/chat" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
+                <MessageCircle size={15} /> Chat
               </Link>
               <Link href="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
                 <Rocket size={15} /> Proyectos
-              </Link>
-              <Link href="/generate-pdf" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
-                <FileText size={15} /> Generar PDF
               </Link>
             </nav>
           </div>
@@ -50,14 +47,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
         <nav className="md:hidden flex items-center gap-1 px-5 pb-2 -mt-1">
-          <Link href="/community" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
-            <Users size={13} /> Comunidad
+          <Link href="/chat" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
+            <MessageCircle size={13} /> Chat
           </Link>
           <Link href="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
             <Rocket size={13} /> Proyectos
-          </Link>
-          <Link href="/generate-pdf" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
-            <FileText size={13} /> Generar PDF
           </Link>
         </nav>
       </header>

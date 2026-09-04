@@ -10,23 +10,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
 export function ChatWindow({
-  communityId,
-  communityName,
   initialMessages,
   currentUser,
-  isMember,
-  isModerator,
 }: {
-  communityId: string;
-  communityName: string;
   initialMessages: ChatMessageType[];
   currentUser: UserProfile;
-  isMember: boolean;
-  isModerator: boolean;
 }) {
   const supabase = createClient();
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
-  const [replyingTo, setReplyingTo] = useState<ChatMessageType | null>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -45,6 +36,7 @@ export function ChatWindow({
 
   const handleIncoming = useCallback(
     async (message: ChatMessageType) => {
+      if (message.community_subject_id) return;
       let author = profileCache.current.get(message.user_id);
       if (!author) {
         const { data } = await supabase.from("user_profiles").select("*").eq("id", message.user_id).single();
@@ -59,21 +51,16 @@ export function ChatWindow({
   );
 
   useEffect(() => {
-    const { channel, unsubscribe } = subscribeToChat(
-      supabase,
-      communityId,
-      handleIncoming,
-      (typingIds) => {
-        setTypingUsers((prev) => {
-          const next: Record<string, string> = {};
-          for (const id of typingIds) {
-            if (id === currentUser.id) continue;
-            next[id] = profileCache.current.get(id)?.display_name ?? prev[id] ?? "Alguien";
-          }
-          return next;
-        });
-      }
-    );
+    const { channel, unsubscribe } = subscribeToChat(supabase, handleIncoming, (typingIds) => {
+      setTypingUsers((prev) => {
+        const next: Record<string, string> = {};
+        for (const id of typingIds) {
+          if (id === currentUser.id) continue;
+          next[id] = profileCache.current.get(id)?.display_name ?? prev[id] ?? "Alguien";
+        }
+        return next;
+      });
+    });
     channelRef.current = channel;
     channel.track({ user_id: currentUser.id, typing: false });
 
@@ -82,7 +69,7 @@ export function ChatWindow({
       channelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [communityId]);
+  }, []);
 
   useEffect(() => {
     if (shouldStickToBottom.current) {
@@ -103,7 +90,7 @@ export function ChatWindow({
     const el = scrollRef.current;
     const prevHeight = el?.scrollHeight ?? 0;
     try {
-      const res = await fetch(`/api/chat/messages?communityId=${communityId}&before=${messages[0].created_at}`);
+      const res = await fetch(`/api/chat/messages?before=${messages[0].created_at}`);
       const body = await res.json();
       const older: ChatMessageType[] = body.messages ?? [];
       if (older.length < 50) setHasMore(false);
@@ -146,13 +133,13 @@ export function ChatWindow({
     const optimisticId = `optimistic-${crypto.randomUUID()}`;
     const optimistic: ChatMessageType = {
       id: optimisticId,
-      community_subject_id: communityId,
+      community_subject_id: null,
       user_id: currentUser.id,
       content,
       message_type: messageType as ChatMessageType["message_type"],
       file_url: fileUrl ?? null,
       file_name: fileName ?? null,
-      reply_to_id: replyingTo?.id ?? null,
+      reply_to_id: null,
       is_pinned: false,
       is_deleted: false,
       moderation_status: "approved",
@@ -161,19 +148,11 @@ export function ChatWindow({
       author: currentUser,
     };
     setMessages((prev) => [...prev, optimistic]);
-    setReplyingTo(null);
 
     const res = await fetch("/api/chat/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        communityId,
-        content,
-        fileUrl,
-        fileName,
-        messageType,
-        replyToId: optimistic.reply_to_id,
-      }),
+      body: JSON.stringify({ content, fileUrl, fileName, messageType }),
     });
     const body = await res.json();
     setMessages((prev) =>
@@ -183,20 +162,15 @@ export function ChatWindow({
     );
   }
 
-  async function handleTogglePin(message: ChatMessageType) {
-    await supabase.from("chat_messages").update({ is_pinned: !message.is_pinned }).eq("id", message.id);
-    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, is_pinned: !m.is_pinned } : m)));
-  }
-
   const filtered = searchQuery
     ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
     : messages;
   const typingNames = Object.values(typingUsers);
 
   return (
-    <div className="flex flex-col h-[70vh] border border-border rounded-2xl overflow-hidden bg-surface">
+    <div className="flex flex-col h-[75vh] border border-border rounded-2xl overflow-hidden bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-        <p className="font-medium text-sm">#{communityName}</p>
+        <p className="font-medium text-sm">#chat-general</p>
         <button onClick={() => setShowSearch((v) => !v)} className="text-muted hover:text-foreground cursor-pointer">
           <Search size={16} />
         </button>
@@ -213,20 +187,13 @@ export function ChatWindow({
         </div>
       )}
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto py-4 space-y-4">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto py-4 space-y-3">
         {loadingOlder && <p className="text-center text-xs text-muted">Cargando mensajes anteriores…</p>}
         {filtered.length === 0 && (
           <p className="text-center text-sm text-muted py-12">Sé el primero en escribir aquí.</p>
         )}
         {filtered.map((m) => (
-          <ChatMessage
-            key={m.id}
-            message={m}
-            isOwn={m.user_id === currentUser.id}
-            onReply={setReplyingTo}
-            canPin={isModerator}
-            onTogglePin={handleTogglePin}
-          />
+          <ChatMessage key={m.id} message={m} isOwn={m.user_id === currentUser.id} />
         ))}
       </div>
 
@@ -234,13 +201,7 @@ export function ChatWindow({
         <TypingIndicator names={typingNames} />
       </div>
 
-      <ChatInput
-        onSend={handleSend}
-        onTyping={handleTyping}
-        replyingTo={replyingTo}
-        onCancelReply={() => setReplyingTo(null)}
-        disabled={!isMember}
-      />
+      <ChatInput onSend={handleSend} onTyping={handleTyping} disabled={false} />
     </div>
   );
 }

@@ -10,10 +10,9 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
-  const communityId = searchParams.get("communityId");
   const before = searchParams.get("before");
-  if (!communityId || !before) return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+  if (!before) return NextResponse.json({ error: "Falta el parámetro before" }, { status: 400 });
 
-  const messages = await getOlderMessages(supabase, communityId, before);
+  const messages = await getOlderMessages(supabase, before);
   return NextResponse.json({ messages });
 }

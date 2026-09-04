@@ -1,25 +1,12 @@
 import { cn } from "@/lib/utils";
 import type { ChatMessage as ChatMessageType } from "@/lib/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
-import { Pin, Reply } from "lucide-react";
 
-export function ChatMessage({
-  message,
-  isOwn,
-  onReply,
-  canPin,
-  onTogglePin,
-}: {
-  message: ChatMessageType;
-  isOwn: boolean;
-  onReply: (message: ChatMessageType) => void;
-  canPin: boolean;
-  onTogglePin: (message: ChatMessageType) => void;
-}) {
+export function ChatMessage({ message, isOwn }: { message: ChatMessageType; isOwn: boolean }) {
   if (message.moderation_status === "rejected") return null;
 
   return (
-    <div className={cn("group flex gap-2.5 px-1", isOwn && "flex-row-reverse")}>
+    <div className={cn("flex gap-2.5 px-4", isOwn && "flex-row-reverse")}>
       <div className="h-8 w-8 rounded-full bg-surface-hover flex items-center justify-center text-xs font-heading font-bold shrink-0 overflow-hidden">
         {message.author?.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -38,7 +25,6 @@ export function ChatMessage({
           <span className="text-muted-light font-mono">
             {new Date(message.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
           </span>
-          {message.is_pinned && <Pin size={11} className="text-warning" />}
         </div>
 
         {message.moderation_status === "pending" && !isOwn ? null : (
@@ -59,17 +45,6 @@ export function ChatMessage({
             )}
           </div>
         )}
-
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 text-xs text-muted">
-          <button onClick={() => onReply(message)} className="flex items-center gap-1 cursor-pointer hover:text-foreground">
-            <Reply size={12} /> Responder
-          </button>
-          {canPin && (
-            <button onClick={() => onTogglePin(message)} className="flex items-center gap-1 cursor-pointer hover:text-foreground">
-              <Pin size={12} /> {message.is_pinned ? "Desfijar" : "Fijar"}
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -134,9 +134,6 @@ export async function moderateAndLog(
 
 const TABLE_BY_TYPE: Record<ModerationContentType, string> = {
   chat_message: "chat_messages",
-  post: "posts",
-  comment: "post_comments",
-  shared_note: "shared_notes",
   project: "projects",
   project_application: "project_applications",
 };

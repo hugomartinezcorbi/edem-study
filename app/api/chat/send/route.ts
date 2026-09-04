@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getUserModerationStatus, moderateAndLog } from "@/lib/moderation";
-import { notify, notifyMentions } from "@/lib/notifications";
+import { notifyMentions } from "@/lib/notifications";
 import { NextResponse } from "next/server";
 
 export const maxDuration = 30;
@@ -12,19 +12,8 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { communityId, content, replyToId, fileUrl, fileName, messageType } = await request.json();
+  const { content, fileUrl, fileName, messageType } = await request.json();
   if (!content?.trim() && !fileUrl) return NextResponse.json({ error: "Mensaje vacío" }, { status: 400 });
-
-  const [{ data: membership }, { data: community }] = await Promise.all([
-    supabase
-      .from("community_memberships")
-      .select("id")
-      .eq("community_subject_id", communityId)
-      .eq("user_id", user.id)
-      .maybeSingle(),
-    supabase.from("community_subjects").select("name").eq("id", communityId).single(),
-  ]);
-  if (!membership) return NextResponse.json({ error: "Únete a la comunidad para escribir" }, { status: 403 });
 
   const status = await getUserModerationStatus(supabase, user.id);
   if (status.banned) return NextResponse.json({ error: "Tu cuenta no puede publicar" }, { status: 403 });
@@ -33,9 +22,9 @@ export async function POST(request: Request) {
     contentType: "chat_message",
     contentId: crypto.randomUUID(),
     userId: user.id,
-    communitySubjectId: communityId,
+    communitySubjectId: null,
     content: content ?? fileName ?? "archivo adjunto",
-    communityName: community?.name ?? "",
+    communityName: "Chat",
     forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";
@@ -43,13 +32,12 @@ export async function POST(request: Request) {
   const { data: message, error } = await supabase
     .from("chat_messages")
     .insert({
-      community_subject_id: communityId,
+      community_subject_id: null,
       user_id: user.id,
       content: content ?? "",
       message_type: messageType ?? "text",
       file_url: fileUrl ?? null,
       file_name: fileName ?? null,
-      reply_to_id: replyToId ?? null,
       moderation_status: moderationStatus,
     })
     .select("*, author:user_profiles(*)")
@@ -60,22 +48,9 @@ export async function POST(request: Request) {
     await notifyMentions(supabase, {
       content,
       excludeUserId: user.id,
-      title: `Mención en #${community?.name}`,
-      link: `/community/${communityId}/chat`,
+      title: "Mención en el chat",
+      link: "/chat",
     });
-
-    if (replyToId) {
-      const { data: original } = await supabase.from("chat_messages").select("user_id").eq("id", replyToId).single();
-      if (original && original.user_id !== user.id) {
-        await notify(supabase, {
-          userId: original.user_id,
-          type: "reply",
-          title: "Te han respondido en el chat",
-          body: content?.slice(0, 120) ?? "",
-          link: `/community/${communityId}/chat`,
-        });
-      }
-    }
   }
 
   return NextResponse.json({ message, moderationStatus });

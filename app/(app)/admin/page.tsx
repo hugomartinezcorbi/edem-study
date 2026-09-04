@@ -15,10 +15,7 @@ export default async function AdminStatsPage() {
         <Stat label="Usuarios totales" value={stats.totalUsers} />
         <Stat label="Activos hoy" value={stats.activeToday} />
         <Stat label="Activos esta semana" value={stats.activeWeek} />
-        <Stat label="PDFs generados" value={stats.pdfGenerationsTotal} />
         <Stat label="Mensajes de chat" value={stats.messagesTotal} />
-        <Stat label="Publicaciones" value={stats.postsTotal} />
-        <Stat label="Apuntes compartidos" value={stats.sharedNotesTotal} />
         <Stat label="Pendientes de revisión" value={modStats.pendingCount} accent />
       </section>
 
