@@ -138,14 +138,27 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Semestre I</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {activeSubjects.map((s) => (
-            <SubjectCard key={s.id} subject={s} />
-          ))}
-        </div>
-      </section>
+      {activeSubjects.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold">Semestre I</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {activeSubjects.map((s) => (
+              <SubjectCard key={s.id} subject={s} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data.subjects.length === 0 && (
+        <Card>
+          <CardBody className="text-center py-10 space-y-1">
+            <p className="font-medium">Todavía no tienes asignaturas</p>
+            <p className="text-sm text-muted">
+              Se cargan solas al confirmar tu cuenta. Si no aparecen, escríbeme desde Peticiones.
+            </p>
+          </CardBody>
+        </Card>
+      )}
 
       {inactiveSubjects.length > 0 && (
         <section className="space-y-4">
