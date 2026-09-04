@@ -15,6 +15,9 @@ export async function POST(request: Request) {
   const { content, fileUrl, fileName, messageType } = await request.json();
   if (!content?.trim() && !fileUrl) return NextResponse.json({ error: "Mensaje vacío" }, { status: 400 });
 
+  const { data: profile } = await supabase.from("user_profiles").select("degree").eq("id", user.id).single();
+  const degree = profile?.degree === "IGE" ? "IGE" : "ADE";
+
   const status = await getUserModerationStatus(supabase, user.id);
   if (status.banned) return NextResponse.json({ error: "Tu cuenta no puede publicar" }, { status: 403 });
 
@@ -24,7 +27,7 @@ export async function POST(request: Request) {
     userId: user.id,
     communitySubjectId: null,
     content: content ?? fileName ?? "archivo adjunto",
-    communityName: "Chat",
+    communityName: `Chat ${degree}`,
     forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";
@@ -33,6 +36,7 @@ export async function POST(request: Request) {
     .from("chat_messages")
     .insert({
       community_subject_id: null,
+      degree,
       user_id: user.id,
       content: content ?? "",
       message_type: messageType ?? "text",

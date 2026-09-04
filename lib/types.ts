@@ -214,6 +214,7 @@ export type ModerationStatus = "approved" | "pending" | "rejected";
 export interface ChatMessage {
   id: string;
   community_subject_id: string | null;
+  degree: "ADE" | "IGE" | null;
   user_id: string;
   content: string;
   message_type: ChatMessageType;

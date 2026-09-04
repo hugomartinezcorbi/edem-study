@@ -13,6 +13,9 @@ export async function GET(request: Request) {
   const before = searchParams.get("before");
   if (!before) return NextResponse.json({ error: "Falta el parámetro before" }, { status: 400 });
 
-  const messages = await getOlderMessages(supabase, before);
+  const { data: profile } = await supabase.from("user_profiles").select("degree").eq("id", user.id).single();
+  const degree = profile?.degree === "IGE" ? "IGE" : "ADE";
+
+  const messages = await getOlderMessages(supabase, degree, before);
   return NextResponse.json({ messages });
 }

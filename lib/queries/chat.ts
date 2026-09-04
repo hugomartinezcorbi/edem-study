@@ -6,11 +6,11 @@ type DB = SupabaseClient<any, any, any>;
 
 const PAGE_SIZE = 50;
 
-export async function getRecentMessages(db: DB): Promise<ChatMessage[]> {
+export async function getRecentMessages(db: DB, degree: "ADE" | "IGE"): Promise<ChatMessage[]> {
   const { data } = await db
     .from("chat_messages")
     .select("*, author:user_profiles(*)")
-    .is("community_subject_id", null)
+    .eq("degree", degree)
     .eq("is_deleted", false)
     .order("created_at", { ascending: false })
     .limit(PAGE_SIZE);
@@ -18,11 +18,11 @@ export async function getRecentMessages(db: DB): Promise<ChatMessage[]> {
   return ((data as ChatMessage[]) ?? []).reverse();
 }
 
-export async function getOlderMessages(db: DB, beforeCreatedAt: string): Promise<ChatMessage[]> {
+export async function getOlderMessages(db: DB, degree: "ADE" | "IGE", beforeCreatedAt: string): Promise<ChatMessage[]> {
   const { data } = await db
     .from("chat_messages")
     .select("*, author:user_profiles(*)")
-    .is("community_subject_id", null)
+    .eq("degree", degree)
     .eq("is_deleted", false)
     .lt("created_at", beforeCreatedAt)
     .order("created_at", { ascending: false })
