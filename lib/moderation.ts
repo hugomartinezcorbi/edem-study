@@ -66,9 +66,8 @@ export async function moderateAndLog(
     contentType: ModerationContentType;
     contentId: string;
     userId: string;
-    communitySubjectId: string | null;
     content: string;
-    communityName: string;
+    contextLabel: string;
     forceReview?: boolean;
   }
 ): Promise<ModerationResult> {
@@ -81,7 +80,6 @@ export async function moderateAndLog(
       content_type: params.contentType,
       content_id: params.contentId,
       user_id: params.userId,
-      community_subject_id: params.communitySubjectId,
       content_preview: params.content.slice(0, 300),
       ai_decision: "auto_rejected",
       ai_reason: `Contiene la palabra bloqueada "${hitBlocked}"`,
@@ -96,7 +94,7 @@ export async function moderateAndLog(
     verdict = await moderateContent({
       content: params.content,
       contentType: params.contentType,
-      communityName: params.communityName,
+      communityName: params.contextLabel,
     });
   } catch {
     // If moderation itself fails, default to manual review rather than blocking the user or auto-publishing.
@@ -117,7 +115,6 @@ export async function moderateAndLog(
     content_type: params.contentType,
     content_id: params.contentId,
     user_id: params.userId,
-    community_subject_id: params.communitySubjectId,
     content_preview: params.content.slice(0, 300),
     ai_decision: aiDecision,
     ai_reason: hitFlagged

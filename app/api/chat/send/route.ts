@@ -27,9 +27,8 @@ export async function POST(request: Request) {
     contentType: "chat_message",
     contentId: crypto.randomUUID(),
     userId: user.id,
-    communitySubjectId: null,
     content: content ?? fileName ?? "archivo adjunto",
-    communityName: degree ? `Chat ${degree}` : "Chat Mixto",
+    contextLabel: degree ? `Chat ${degree}` : "Chat Mixto",
     forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";

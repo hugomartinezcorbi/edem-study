@@ -25,9 +25,8 @@ export async function POST(request: Request) {
     contentType: "project",
     contentId: crypto.randomUUID(),
     userId: user.id,
-    communitySubjectId: null,
     content: `${title}\n\n${tagline}\n\n${description}`,
-    communityName: "Proyectos",
+    contextLabel: "Proyectos",
     forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";

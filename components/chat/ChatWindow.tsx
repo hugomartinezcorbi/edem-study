@@ -9,6 +9,8 @@ import type { ChatMessage as ChatMessageType, UserProfile } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
+
 export function ChatWindow({
   degree,
   initialMessages,
@@ -26,6 +28,7 @@ export function ChatWindow({
   const [showSearch, setShowSearch] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(initialMessages.length >= 50);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const profileCache = useRef<Map<string, UserProfile>>(new Map());
@@ -121,15 +124,25 @@ export function ChatWindow({
     let messageType = "text";
 
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/chat/upload", { method: "POST", body: formData });
-      const body = await res.json();
-      if (res.ok) {
-        fileUrl = body.fileUrl;
-        fileName = body.fileName;
-        messageType = body.messageType;
+      if (file.size > MAX_FILE_BYTES) {
+        setUploadError("El archivo supera los 50 MB");
+        return;
       }
+      setUploadError(null);
+      // Uploaded straight to Supabase Storage — relaying the bytes through an
+      // API route would cap attachments at Vercel's ~4.5 MB body limit.
+      const path = `${currentUser.id}/${crypto.randomUUID()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("chat-files").upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+      });
+      if (uploadError) {
+        setUploadError("No se pudo subir el archivo");
+        return;
+      }
+      const { data: signed } = await supabase.storage.from("chat-files").createSignedUrl(path, 60 * 60 * 24 * 7);
+      fileUrl = signed?.signedUrl ?? path;
+      fileName = file.name;
+      messageType = file.type.startsWith("image/") ? "image" : "file";
     }
 
     const optimisticId = `optimistic-${crypto.randomUUID()}`;
@@ -199,6 +212,8 @@ export function ChatWindow({
           <ChatMessage key={m.id} message={m} isOwn={m.user_id === currentUser.id} />
         ))}
       </div>
+
+      {uploadError && <p className="px-4 text-xs text-danger">{uploadError}</p>}
 
       <div className="px-4">
         <TypingIndicator names={typingNames} />

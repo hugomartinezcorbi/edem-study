@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { UploadCloud } from "lucide-react";
 import type { Topic } from "@/lib/types";
+
+const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 export function DocumentUploader({
   subjectId,
@@ -25,18 +28,41 @@ export function DocumentUploader({
   async function uploadFiles(files: FileList | File[]) {
     setError(null);
     setUploading(true);
+    const supabase = createClient();
     try {
-      for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("subjectId", subjectId);
-        if (topicId) formData.append("topicId", topicId);
-        if (isExam) formData.append("isExam", "true");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Sesión caducada, vuelve a entrar");
 
-        const res = await fetch("/api/documents/upload", { method: "POST", body: formData });
+      for (const file of Array.from(files)) {
+        if (file.size > MAX_FILE_BYTES) {
+          throw new Error(`${file.name} supera los 100 MB`);
+        }
+
+        // Straight to Supabase Storage: going through our own API route would
+        // cap uploads at Vercel's ~4.5 MB request-body limit.
+        const storagePath = `${user.id}/${subjectId}/${crypto.randomUUID()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from("documents").upload(storagePath, file, {
+          contentType: file.type || "application/octet-stream",
+        });
+        if (uploadError) throw new Error(`Error al subir ${file.name}: ${uploadError.message}`);
+
+        const res = await fetch("/api/documents/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subjectId,
+            topicId: topicId || null,
+            isExam: !!isExam,
+            storagePath,
+            filename: file.name,
+            contentType: file.type,
+          }),
+        });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
-          throw new Error(body.error ?? `Error al subir ${file.name}`);
+          throw new Error(body.error ?? `Error al procesar ${file.name}`);
         }
       }
       router.refresh();
@@ -92,7 +118,7 @@ export function DocumentUploader({
         <Button type="button" variant="outline" size="sm" loading={uploading} onClick={() => inputRef.current?.click()}>
           Selecciona archivos
         </Button>
-        <p className="text-xs text-muted mt-3">PDF, DOCX, PPTX o imágenes de apuntes</p>
+        <p className="text-xs text-muted mt-3">PDF, DOCX, PPTX o imágenes de apuntes · hasta 100 MB</p>
       </div>
 
       {error && <p className="text-sm text-danger">{error}</p>}

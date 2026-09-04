@@ -23,6 +23,32 @@ export default async function DashboardPage() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Buenos días" : hour < 20 ? "Buenas tardes" : "Buenas noches";
 
+  const hasActivity = data.totalConcepts > 0;
+  const firstSubjectId = activeSubjects[0]?.id ?? data.subjects[0]?.id;
+  const hero = !hasActivity
+    ? {
+        label: "Primer paso",
+        title: "Sube tus apuntes",
+        subtitle: "Con tu material generamos los apuntes y las preguntas para estudiar.",
+        cta: "Subir material",
+        href: firstSubjectId ? `/subject/${firstSubjectId}/documents` : "/dashboard",
+      }
+    : data.dueTodayCount > 0
+      ? {
+          label: "Lo que toca hoy",
+          title: `${data.dueTodayCount} ${data.dueTodayCount === 1 ? "concepto" : "conceptos"} para repasar`,
+          subtitle: "Fallar → Estudiar → Explicar → Volver.",
+          cta: "Empezar ahora",
+          href: "/study?mode=today",
+        }
+      : {
+          label: "Todo al día",
+          title: "No te toca repasar nada",
+          subtitle: "Puedes adelantar con un repaso rápido de 10 preguntas.",
+          cta: "Repaso rápido",
+          href: "/study?mode=quick",
+        };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -46,32 +72,31 @@ export default async function DashboardPage() {
       <Card className="bg-accent text-accent-foreground border-none">
         <CardBody className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="label-mono !text-white/70">Lo que toca hoy</p>
-            <p className="text-3xl font-bold font-heading mt-1">
-              {data.dueTodayCount} {data.dueTodayCount === 1 ? "concepto" : "conceptos"} pendientes de repaso
-            </p>
+            <p className="label-mono !text-white/70">{hero.label}</p>
+            <p className="text-3xl font-bold font-heading mt-1 leading-tight">{hero.title}</p>
+            <p className="text-sm text-white/70 mt-1">{hero.subtitle}</p>
           </div>
-          <Link href="/study?mode=today">
+          <Link href={hero.href} className="shrink-0">
             <Button variant="secondary" size="lg" className="bg-white/15 text-white hover:bg-white/25">
-              Empezar ahora
+              {hero.cta}
             </Button>
           </Link>
         </CardBody>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Minutos esta semana" value={data.weekMinutes.toString()} />
-        <StatCard label="Conceptos nuevos" value={data.weekNewConcepts.toString()} />
-        <StatCard
-          label="Tasa de acierto"
-          value={data.globalAccuracy !== null ? `${Math.round(data.globalAccuracy * 100)}%` : "—"}
-        />
-        <StatCard
-          label={data.strongestSubject ? "Más fuerte" : "Sin datos aún"}
-          value={data.strongestSubject ?? "—"}
-          small
-        />
-      </div>
+      {hasActivity && (
+        <Card>
+          <CardBody className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border">
+            <Stat label="Minutos esta semana" value={data.weekMinutes.toString()} />
+            <Stat label="Conceptos nuevos" value={data.weekNewConcepts.toString()} />
+            <Stat
+              label="Tasa de acierto"
+              value={data.globalAccuracy !== null ? `${Math.round(data.globalAccuracy * 100)}%` : "—"}
+            />
+            <Stat label="Más fuerte" value={data.strongestSubject ?? "—"} small />
+          </CardBody>
+        </Card>
+      )}
 
       {data.totalConcepts > 0 && (
         <Card>
@@ -136,14 +161,12 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({ label, value, small }: { label: string; value: string; small?: boolean }) {
+function Stat({ label, value, small }: { label: string; value: string; small?: boolean }) {
   return (
-    <Card>
-      <CardBody>
-        <p className="label-mono">{label}</p>
-        <p className={`font-bold font-heading mt-1 ${small ? "text-base truncate" : "text-2xl"}`}>{value}</p>
-      </CardBody>
-    </Card>
+    <div className="px-1 py-3 sm:py-0 sm:px-4 first:sm:pl-0 last:sm:pr-0">
+      <p className="label-mono">{label}</p>
+      <p className={`font-bold font-heading mt-0.5 ${small ? "text-base truncate" : "text-2xl"}`}>{value}</p>
+    </div>
   );
 }
 
@@ -164,35 +187,53 @@ function SubjectCard({
           </div>
         </div>
 
-        <div>
-          <div className="flex justify-between text-xs text-muted mb-1">
-            <span>
-              {subject.masteredConcepts}/{subject.totalConcepts} dominados
-            </span>
-            <span>{Math.round(masteryRatio * 100)}%</span>
-          </div>
-          <ProgressBar value={masteryRatio} color={subject.color} />
-        </div>
+        {subject.totalConcepts > 0 ? (
+          <>
+            <div>
+              <div className="flex justify-between text-xs text-muted mb-1">
+                <span>
+                  {subject.masteredConcepts}/{subject.totalConcepts} dominados
+                </span>
+                <span>{Math.round(masteryRatio * 100)}%</span>
+              </div>
+              <ProgressBar value={masteryRatio} color={subject.color} />
+            </div>
 
-        <div className="flex items-center justify-between text-xs text-muted">
-          <span className="flex items-center gap-1">
-            <Target size={12} /> {formatRelativeDays(subject.lastStudied)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Upload size={12} /> {subject.documentsCount} docs
-          </span>
-        </div>
+            <div className="flex items-center justify-between text-xs text-muted">
+              <span className="flex items-center gap-1">
+                <Target size={12} /> {formatRelativeDays(subject.lastStudied)}
+              </span>
+              <span className="flex items-center gap-1">
+                <Upload size={12} /> {subject.documentsCount} docs
+              </span>
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-muted">
+            {subject.documentsCount > 0
+              ? "Material subido · genera los apuntes para empezar"
+              : "Sin material todavía · sube tus apuntes o exámenes"}
+          </p>
+        )}
 
         <div className="mt-auto pt-2 flex gap-2 text-xs font-medium">
           <Link href={`/subject/${subject.id}/notes`} className="flex-1 text-center py-2 rounded-lg bg-surface-hover hover:bg-border transition-colors">
             Apuntes
           </Link>
-          <Link href={`/subject/${subject.id}/study`} className="flex-1 text-center py-2 rounded-lg bg-accent text-accent-foreground hover:opacity-90 transition-opacity">
-            Estudiar
-          </Link>
-          <Link href={`/subject/${subject.id}/documents`} className="flex-1 text-center py-2 rounded-lg bg-surface-hover hover:bg-border transition-colors">
-            Docs
-          </Link>
+          {subject.totalConcepts > 0 ? (
+            <>
+              <Link href={`/subject/${subject.id}/study`} className="flex-1 text-center py-2 rounded-lg bg-accent text-accent-foreground hover:opacity-90 transition-opacity">
+                Estudiar
+              </Link>
+              <Link href={`/subject/${subject.id}/documents`} className="flex-1 text-center py-2 rounded-lg bg-surface-hover hover:bg-border transition-colors">
+                Docs
+              </Link>
+            </>
+          ) : (
+            <Link href={`/subject/${subject.id}/documents`} className="flex-[2] text-center py-2 rounded-lg bg-accent text-accent-foreground hover:opacity-90 transition-opacity">
+              Subir material
+            </Link>
+          )}
         </div>
       </CardBody>
     </Card>

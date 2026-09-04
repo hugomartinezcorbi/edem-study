@@ -17,7 +17,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-heading font-bold">@{data.profile.username}</h1>
+      <h1 className="text-2xl font-heading font-bold">{data.profile.display_name}</h1>
 
       <ProfileCard data={data} isOwn={false} />
     </div>

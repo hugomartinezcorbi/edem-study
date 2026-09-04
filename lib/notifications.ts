@@ -21,6 +21,27 @@ export async function notify(
   });
 }
 
+/**
+ * Same as notify(), but for a service-role client (the admin panel). The RPC
+ * notify() uses requires auth.uid(), which a service-role client doesn't have —
+ * it would raise and be swallowed. Service role bypasses RLS, so it inserts
+ * directly instead.
+ */
+export async function notifyAsService(
+  db: DB,
+  params: { userId: string; type: NotificationType; title: string; body: string; link?: string }
+) {
+  if (!params.userId) return;
+  const { error } = await db.from("notifications").insert({
+    user_id: params.userId,
+    type: params.type,
+    title: params.title,
+    body: params.body,
+    link: params.link ?? null,
+  });
+  if (error) console.error("notification insert failed:", error.message);
+}
+
 /** Extracts @username mentions from a message/post body. */
 export function extractMentions(content: string): string[] {
   const matches = content.matchAll(/@([a-zA-Z0-9_]{2,32})/g);

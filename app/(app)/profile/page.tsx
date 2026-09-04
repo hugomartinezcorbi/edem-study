@@ -30,8 +30,6 @@ export default async function MyProfilePage() {
           Panel de administración →
         </Link>
       )}
-
-      <p className="text-xs text-muted-light font-mono">ID de usuario: {user.id}</p>
     </div>
   );
 }

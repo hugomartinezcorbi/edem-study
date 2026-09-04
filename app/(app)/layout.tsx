@@ -7,7 +7,7 @@ import { getUnreadCount } from "@/lib/queries/notifications";
 import { isAdminId } from "@/lib/admin";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageCircle, Rocket, ShieldCheck } from "lucide-react";
+import { MessageCircle, Rocket, ShieldCheck, Inbox } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,6 +55,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <Link href="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
                 <Rocket size={15} /> Proyectos
               </Link>
+              <Link href="/requests" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
+                <Inbox size={15} /> Peticiones
+              </Link>
               {admin && (
                 <Link href="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
                   <ShieldCheck size={15} /> Admin
@@ -77,6 +80,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <Link href="/projects" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
             <Rocket size={13} /> Proyectos
+          </Link>
+          <Link href="/requests" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
+            <Inbox size={13} /> Peticiones
           </Link>
           {admin && (
             <Link href="/admin" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted hover:text-foreground hover:bg-surface-hover transition-colors">

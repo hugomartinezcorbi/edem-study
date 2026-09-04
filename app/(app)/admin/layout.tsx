@@ -5,6 +5,7 @@ import { AdminNavLink } from "@/components/admin/AdminNavLink";
 
 const TABS = [
   { href: "/admin", label: "Estadísticas" },
+  { href: "/admin/requests", label: "Peticiones" },
   { href: "/admin/queue", label: "Cola de moderación" },
   { href: "/admin/history", label: "Historial" },
   { href: "/admin/users", label: "Usuarios" },

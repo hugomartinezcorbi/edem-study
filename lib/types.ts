@@ -278,7 +278,23 @@ export type NotificationType =
   | "download"
   | "moderation"
   | "project_application"
-  | "project_decision";
+  | "project_decision"
+  | "request"
+  | "request_reply";
+
+export type RequestCategory = "sugerencia" | "error" | "ayuda" | "otro";
+
+export interface UserRequest {
+  id: string;
+  user_id: string;
+  category: RequestCategory;
+  message: string;
+  status: "open" | "done";
+  admin_reply: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  author?: UserProfile;
+}
 
 export interface AppNotification {
   id: string;
