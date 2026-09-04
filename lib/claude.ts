@@ -57,7 +57,7 @@ export async function generateOrUpdateNotes(params: {
   processedDocsSummary: string;
 }): Promise<{ notes: NotesContent; newConcepts: NewConceptDraft[] }> {
   const system =
-    "Eres un asistente académico experto. Generas y mantienes apuntes universitarios completos, unificados y bien organizados. Respondes ÚNICAMENTE con JSON válido, sin texto adicional fuera del JSON.";
+    "Eres un asistente académico experto que redacta apuntes para estudiantes de EDEM, una universidad exigente. Generas y mantienes apuntes universitarios completos, unificados y bien organizados, al nivel de rigor real de la asignatura: mismo vocabulario técnico, mismas fórmulas y mismo nivel de profundidad que el material fuente, sin simplificar ni rebajar el nivel para que 'se entienda más fácil'. No sustituyas términos técnicos por explicaciones coloquiales; defínelos con precisión y amplíalos si hace falta, pero mantén el registro académico. Respondes ÚNICAMENTE con JSON válido, sin texto adicional fuera del JSON.";
 
   const prompt = `ASIGNATURA: ${params.subjectName}
 
@@ -76,6 +76,7 @@ INSTRUCCIONES:
 3. Si el nuevo material amplía algo que ya estaba, ACTUALIZA esa sección; no la dupliques.
 4. Si es un tema nuevo, créalo en el lugar correcto del orden lógico.
 5. Los apuntes deben ser claros, con ejemplos prácticos, definiciones precisas, fórmulas en LaTeX cuando aplique, y sin repeticiones.
+6. NO simplifiques el contenido ni bajes el nivel técnico del material original: conserva la terminología, notación y profundidad propias de una asignatura universitaria exigente. Un apunte "claro" no es un apunte "fácil"; es uno preciso y bien explicado al nivel correspondiente.
 
 Responde con un único objeto JSON con esta forma exacta:
 {
@@ -169,13 +170,13 @@ export async function generateQuestionsForConcept(params: {
   examStyleNotes?: string;
 }): Promise<GeneratedQuestion[]> {
   const system =
-    "Eres un profesor universitario que redacta preguntas de examen precisas y bien calibradas. Respondes ÚNICAMENTE con un array JSON válido.";
+    "Eres un profesor universitario de EDEM que redacta preguntas de examen precisas y bien calibradas, al nivel real de exigencia de una universidad de alto nivel. No simplifiques el enunciado ni el vocabulario técnico para hacerlo más fácil: usa la terminología propia de la asignatura tal como aparece en los apuntes. Respondes ÚNICAMENTE con un array JSON válido.";
 
   const styleGuidance = params.examStyleNotes
-    ? `\nESTILO REAL DE EXAMEN PARA ESTA ASIGNATURA (basado en exámenes anteriores subidos por el estudiante, imita este estilo y nivel de dificultad):\n${params.examStyleNotes}\n`
+    ? `\nESTILO REAL DE EXAMEN PARA ESTA ASIGNATURA (basado en exámenes anteriores subidos por el estudiante, imita este estilo y nivel de dificultad exactos, sin rebajarlo):\n${params.examStyleNotes}\n`
     : "";
 
-  const prompt = `Genera ${params.count ?? 3} preguntas de estudio sobre este concepto, mezclando tipos (multiple_choice, true_false, short_answer):
+  const prompt = `Genera ${params.count ?? 3} preguntas de estudio sobre este concepto, mezclando tipos (multiple_choice, true_false, short_answer). Mantén el nivel técnico universitario del concepto: no lo simplifiques ni uses un vocabulario más sencillo del que aparece en la definición y los puntos clave.
 
 CONCEPTO: ${params.conceptTitle}
 DEFINICIÓN: ${params.conceptDefinition}
@@ -205,14 +206,14 @@ export async function generatePersonalizedExplanation(params: {
   userWrongAnswer: string;
 }): Promise<{ explanation: string }> {
   const system =
-    "Eres un tutor paciente. Explicas por qué una respuesta fue incorrecta y corriges el error de razonamiento específico del estudiante. Respondes ÚNICAMENTE con JSON.";
+    "Eres un tutor universitario paciente pero riguroso, de una universidad exigente (EDEM). Explicas por qué una respuesta fue incorrecta y corriges el error de razonamiento específico del estudiante, sin rebajar el nivel técnico de la asignatura. Respondes ÚNICAMENTE con JSON.";
 
   const prompt = `CONCEPTO: ${params.conceptTitle} — ${params.conceptDefinition}
 PREGUNTA: ${params.questionText}
 RESPUESTA CORRECTA: ${params.correctAnswer}
 RESPUESTA DEL ESTUDIANTE (incorrecta): ${params.userWrongAnswer}
 
-Explica, en 3-5 frases, por qué la respuesta del estudiante es incorrecta y cuál es el error de razonamiento concreto que cometió, guiándolo hacia la respuesta correcta. Usa un tono cercano y motivador.
+Explica, en 3-5 frases, por qué la respuesta del estudiante es incorrecta y cuál es el error de razonamiento concreto que cometió, guiándolo hacia la respuesta correcta. Usa un tono cercano y motivador, pero mantén la terminología técnica y el nivel de rigor propios de la asignatura: no sustituyas los términos precisos por explicaciones simplificadas o "para todos los públicos".
 
 Responde con: {"explanation": string}`;
 
@@ -224,12 +225,12 @@ export async function generateAlternativeExplanation(params: {
   conceptDefinition: string;
 }): Promise<{ explanation: string }> {
   const system =
-    "Eres un tutor creativo. Cuando un estudiante no entiende una explicación, das otra completamente distinta: usa una analogía o un enfoque diferente. Respondes ÚNICAMENTE con JSON.";
+    "Eres un tutor universitario creativo pero riguroso. Cuando un estudiante no entiende una explicación, das otra completamente distinta: usa una analogía o un enfoque diferente, sin perder precisión técnica. Respondes ÚNICAMENTE con JSON.";
 
   const prompt = `CONCEPTO: ${params.conceptTitle}
 DEFINICIÓN ORIGINAL: ${params.conceptDefinition}
 
-Da una explicación alternativa, con una analogía o enfoque distinto al de la definición original, en 3-6 frases.
+Da una explicación alternativa, con una analogía o enfoque distinto al de la definición original, en 3-6 frases. La analogía puede ser intuitiva, pero debe conducir de vuelta a los términos técnicos correctos del concepto: no la dejes en una simplificación que pierda el rigor de la asignatura.
 
 Responde con: {"explanation": string}`;
 
@@ -289,7 +290,7 @@ export async function evaluateStudentExplanation(params: {
   const prompt = `El concepto correcto es: ${params.conceptDefinition}
 El estudiante lo ha explicado así: "${params.studentExplanation}"
 
-Evalúa si la explicación del estudiante demuestra comprensión real del concepto (no memorización literal, sino entendimiento).
+Evalúa si la explicación del estudiante demuestra comprensión real del concepto (no memorización literal, sino entendimiento), y si usa correctamente la terminología técnica de la asignatura. Una explicación vaga o excesivamente simplificada que evite los términos técnicos correctos no debe puntuarse como comprensión completa.
 
 Responde con: {"score": number (0-100), "feedback": string (breve y directo, qué está bien y qué falta o es incorrecto), "isCorrect": boolean (true si score > 70)}`;
 
