@@ -187,13 +187,13 @@ export function ChatWindow({
         </div>
       )}
 
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto py-4 space-y-3">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto py-2">
         {loadingOlder && <p className="text-center text-xs text-muted">Cargando mensajes anteriores…</p>}
         {filtered.length === 0 && (
           <p className="text-center text-sm text-muted py-12">Sé el primero en escribir aquí.</p>
         )}
         {filtered.map((m) => (
-          <ChatMessage key={m.id} message={m} isOwn={m.user_id === currentUser.id} />
+          <ChatMessage key={m.id} message={m} />
         ))}
       </div>
 
