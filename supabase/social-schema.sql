@@ -41,8 +41,13 @@ begin
     final_username := base_username || suffix::text;
   end loop;
 
-  insert into public.user_profiles (id, username, display_name)
-  values (new.id, final_username, coalesce(new.raw_user_meta_data->>'full_name', base_username))
+  insert into public.user_profiles (id, username, display_name, degree)
+  values (
+    new.id,
+    final_username,
+    coalesce(new.raw_user_meta_data->>'full_name', base_username),
+    nullif(new.raw_user_meta_data->>'degree', '')
+  )
   on conflict (id) do nothing;
   return new;
 end;

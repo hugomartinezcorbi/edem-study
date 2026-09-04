@@ -267,10 +267,13 @@ create policy "own document files delete" on storage.objects for delete using (
 );
 
 -- ─────────────────────────────────────────────────────────────────────────
--- Seed helper: call after a user signs up to preload the 10 EDEM subjects.
--- Usage: select public.seed_edem_subjects('<user-uuid>');
+-- Seed helper: call after a user signs up to preload their degree's Primer
+-- Curso subjects (ADE or IGE — EDEM only offers these two right now).
+-- Usage: select public.seed_edem_subjects('<user-uuid>', 'ADE');
 -- ─────────────────────────────────────────────────────────────────────────
-create or replace function public.seed_edem_subjects(p_user_id uuid)
+drop function if exists public.seed_edem_subjects(uuid);
+
+create or replace function public.seed_edem_subjects(p_user_id uuid, p_degree text default 'ADE')
 returns void
 language plpgsql
 security definer set search_path = public
@@ -284,18 +287,46 @@ begin
     return; -- already seeded, never duplicate
   end if;
 
-  insert into public.subjects (user_id, name, semester, ects, color, icon, active)
-  values
-    (p_user_id, 'Introduction to Business Management Studies', 1, 6, '#3b82f6', '🏢', true),
-    (p_user_id, 'Fundamentos de la Dirección de Empresas', 1, 6, '#8b5cf6', '📊', true),
-    (p_user_id, 'Financial Accounting', 1, 6, '#10b981', '💰', true),
-    (p_user_id, 'Matemáticas I', 1, 6, '#f59e0b', '📐', true),
-    (p_user_id, 'Introducción a la Economía', 1, 6, '#ef4444', '📈', true),
-    (p_user_id, 'Historia Económica y de la Empresa', 2, 6, '#06b6d4', '🏛️', false),
-    (p_user_id, 'Derecho Mercantil', 2, 6, '#6366f1', '⚖️', false),
-    (p_user_id, 'Basic Statistics', 2, 6, '#ec4899', '📉', false),
-    (p_user_id, 'Microeconomía', 2, 6, '#84cc16', '🔬', false),
-    (p_user_id, 'Matemáticas II', 2, 6, '#f97316', '➗', false)
-  on conflict do nothing;
+  if p_degree = 'IGE' then
+    insert into public.subjects (user_id, name, semester, ects, color, icon, active)
+    values
+      (p_user_id, 'Química', 1, 6, '#3b82f6', '🧪', true),
+      (p_user_id, 'Física I', 1, 6, '#8b5cf6', '⚛️', true),
+      (p_user_id, 'Empresa', 1, 6, '#10b981', '🏢', true),
+      (p_user_id, 'Cálculo', 1, 6, '#f59e0b', '📐', true),
+      (p_user_id, 'Computer Science', 1, 6, '#ef4444', '💻', true),
+      (p_user_id, 'Física II', 2, 6, '#06b6d4', '⚛️', false),
+      (p_user_id, 'Ecuaciones Diferenciales', 2, 4, '#6366f1', '🧮', false),
+      (p_user_id, 'Biología', 2, 6, '#ec4899', '🧬', false),
+      (p_user_id, 'Álgebra', 2, 4, '#84cc16', '➗', false),
+      (p_user_id, 'Graphic Expression', 2, 4, '#14b8a6', '✏️', false),
+      (p_user_id, 'Economía', 2, 6, '#f97316', '📈', false)
+    on conflict do nothing;
+  else
+    insert into public.subjects (user_id, name, semester, ects, color, icon, active)
+    values
+      (p_user_id, 'Introduction to Business Management Studies', 1, 6, '#3b82f6', '🏢', true),
+      (p_user_id, 'Fundamentos de la Dirección de Empresas', 1, 6, '#8b5cf6', '📊', true),
+      (p_user_id, 'Financial Accounting', 1, 6, '#10b981', '💰', true),
+      (p_user_id, 'Matemáticas I', 1, 6, '#f59e0b', '📐', true),
+      (p_user_id, 'Introducción a la Economía', 1, 6, '#ef4444', '📈', true),
+      (p_user_id, 'Historia Económica y de la Empresa', 2, 6, '#06b6d4', '🏛️', false),
+      (p_user_id, 'Derecho Mercantil', 2, 6, '#6366f1', '⚖️', false),
+      (p_user_id, 'Basic Statistics', 2, 6, '#ec4899', '📉', false),
+      (p_user_id, 'Microeconomía', 2, 6, '#84cc16', '🔬', false),
+      (p_user_id, 'Matemáticas II', 2, 6, '#f97316', '➗', false)
+    on conflict do nothing;
+  end if;
+end;
+$$;
+
+-- Thin wrapper so the app can call a degree-named RPC directly.
+create or replace function public.seed_ige_subjects(p_user_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  perform public.seed_edem_subjects(p_user_id, 'IGE');
 end;
 $$;
