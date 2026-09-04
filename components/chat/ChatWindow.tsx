@@ -14,11 +14,12 @@ export function ChatWindow({
   initialMessages,
   currentUser,
 }: {
-  degree: "ADE" | "IGE";
+  degree: "ADE" | "IGE" | null; // null = mixed channel
   initialMessages: ChatMessageType[];
   currentUser: UserProfile;
 }) {
   const supabase = createClient();
+  const channelParam = degree === null ? "mixed" : "own";
   const [messages, setMessages] = useState<ChatMessageType[]>(initialMessages);
   const [typingUsers, setTypingUsers] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +92,7 @@ export function ChatWindow({
     const el = scrollRef.current;
     const prevHeight = el?.scrollHeight ?? 0;
     try {
-      const res = await fetch(`/api/chat/messages?before=${messages[0].created_at}`);
+      const res = await fetch(`/api/chat/messages?channel=${channelParam}&before=${messages[0].created_at}`);
       const body = await res.json();
       const older: ChatMessageType[] = body.messages ?? [];
       if (older.length < 50) setHasMore(false);
@@ -154,7 +155,7 @@ export function ChatWindow({
     const res = await fetch("/api/chat/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, fileUrl, fileName, messageType }),
+      body: JSON.stringify({ content, fileUrl, fileName, messageType, channel: channelParam }),
     });
     const body = await res.json();
     setMessages((prev) =>
@@ -172,7 +173,7 @@ export function ChatWindow({
   return (
     <div className="flex flex-col h-[75vh] border border-border rounded-2xl overflow-hidden bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-        <p className="font-medium text-sm">#chat-{degree.toLowerCase()}</p>
+        <p className="font-medium text-sm">#chat-{degree ? degree.toLowerCase() : "mixto"}</p>
         <button onClick={() => setShowSearch((v) => !v)} className="text-muted hover:text-foreground cursor-pointer">
           <Search size={16} />
         </button>

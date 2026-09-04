@@ -4,18 +4,23 @@ import type { ChatMessage } from "@/lib/types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DB = SupabaseClient<any, any, any>;
 
-export function chatChannelName(degree: "ADE" | "IGE") {
-  return `chat:${degree}`;
+export function chatChannelName(degree: "ADE" | "IGE" | null) {
+  return `chat:${degree ?? "mixed"}`;
 }
 
 export function notificationsChannelName(userId: string) {
   return `notifications:${userId}`;
 }
 
-/** Subscribes to new chat messages for one degree's channel; returns an unsubscribe function. */
+/**
+ * Subscribes to new chat messages for one channel (degree, or null for the
+ * mixed channel); returns an unsubscribe function. Filters client-side rather
+ * than via a postgres_changes `filter`, since that syntax doesn't cleanly
+ * cover the "is null" case alongside "eq" for the same subscription.
+ */
 export function subscribeToChat(
   db: DB,
-  degree: "ADE" | "IGE",
+  degree: "ADE" | "IGE" | null,
   onInsert: (message: ChatMessage) => void,
   onTypingSync?: (typingUserIds: string[]) => void
 ) {
@@ -23,8 +28,10 @@ export function subscribeToChat(
     .channel(chatChannelName(degree))
     .on(
       "postgres_changes",
-      { event: "INSERT", schema: "public", table: "chat_messages", filter: `degree=eq.${degree}` },
-      (payload: { new: ChatMessage }) => onInsert(payload.new)
+      { event: "INSERT", schema: "public", table: "chat_messages" },
+      (payload: { new: ChatMessage }) => {
+        if (payload.new.degree === degree) onInsert(payload.new);
+      }
     )
     .on("presence", { event: "sync" }, () => {
       if (!onTypingSync) return;

@@ -12,11 +12,13 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
 
-  const { content, fileUrl, fileName, messageType } = await request.json();
+  const { content, fileUrl, fileName, messageType, channel } = await request.json();
   if (!content?.trim() && !fileUrl) return NextResponse.json({ error: "Mensaje vacío" }, { status: 400 });
 
   const { data: profile } = await supabase.from("user_profiles").select("degree").eq("id", user.id).single();
-  const degree = profile?.degree === "IGE" ? "IGE" : "ADE";
+  const ownDegree = profile?.degree === "IGE" ? "IGE" : "ADE";
+  // Only two valid destinations: the user's own degree channel, or the mixed one — never a spoofed other degree.
+  const degree = channel === "mixed" ? null : ownDegree;
 
   const status = await getUserModerationStatus(supabase, user.id);
   if (status.banned) return NextResponse.json({ error: "Tu cuenta no puede publicar" }, { status: 403 });
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
     userId: user.id,
     communitySubjectId: null,
     content: content ?? fileName ?? "archivo adjunto",
-    communityName: `Chat ${degree}`,
+    communityName: degree ? `Chat ${degree}` : "Chat Mixto",
     forceReview: status.muted,
   });
   const moderationStatus = aiDecision === "auto_rejected" ? "rejected" : visible ? "approved" : "pending";
