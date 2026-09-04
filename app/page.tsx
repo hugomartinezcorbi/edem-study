@@ -1,4 +1,5 @@
 import { AuthForm } from "@/components/auth/AuthForm";
+import { ConfirmSession } from "@/components/auth/ConfirmSession";
 import { EdemLogo } from "@/components/ui/EdemLogo";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { getSocialAdoptionPercent } from "@/lib/queries/landing";
@@ -24,6 +25,7 @@ export default async function Home() {
 
   return (
     <main className="flex-1 grid lg:grid-cols-2 bg-background">
+      <ConfirmSession />
       <div className="flex flex-col justify-center px-8 sm:px-16 py-12 bg-surface">
         <div className="w-full max-w-sm mx-auto lg:mx-0 space-y-8">
           <EdemLogo size="sm" showTagline={false} />
