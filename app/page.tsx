@@ -42,14 +42,14 @@ export default async function Home() {
 
           <AuthForm />
 
-          <p className="font-mono text-xs text-muted-light">EDEM · ADE · ADE + IG · Primer curso</p>
+          <p className="font-mono text-xs text-muted-light">EDEM · ADE · IGE · Primer curso</p>
         </div>
       </div>
 
       <div className="hidden lg:flex flex-col items-center justify-center px-16 dotted-grid bg-surface-hover relative overflow-hidden">
         <div className="text-center mb-10">
           <EdemLogo size="lg" showTagline={false} />
-          <p className="label-mono mt-2">Tu segundo cerebro para ADE</p>
+          <p className="label-mono mt-2">Tu segundo cerebro para ADE e IGE</p>
         </div>
 
         <div className="w-full max-w-md space-y-5">

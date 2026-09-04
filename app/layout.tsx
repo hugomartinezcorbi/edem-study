@@ -20,8 +20,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MI EDEM — ADE",
-  description: "Tu segundo cerebro para ADE en EDEM: apuntes que se generan solos y el método Fallar-Estudiar-Explicar-Volver.",
+  title: "MI EDEM",
+  description: "Tu segundo cerebro para ADE e IGE en EDEM: apuntes que se generan solos y el método Fallar-Estudiar-Explicar-Volver.",
 };
 
 const themeInitScript = `

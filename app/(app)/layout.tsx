@@ -7,6 +7,18 @@ import { getUnreadCount } from "@/lib/queries/notifications";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MessageCircle, Rocket } from "lucide-react";
+import type { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { title: "MI EDEM" };
+  const { data: profile } = await supabase.from("user_profiles").select("degree").eq("id", user.id).single();
+  const degree = profile?.degree === "IGE" ? "IGE" : "ADE";
+  return { title: `MI EDEM — ${degree}` };
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -16,7 +28,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/");
 
-  const [, unreadCount] = await Promise.all([supabase.rpc("ensure_own_profile"), getUnreadCount(supabase, user.id)]);
+  const [, unreadCount, { data: profile }] = await Promise.all([
+    supabase.rpc("ensure_own_profile"),
+    getUnreadCount(supabase, user.id),
+    supabase.from("user_profiles").select("degree").eq("id", user.id).single(),
+  ]);
+  const degree = profile?.degree === "IGE" ? "IGE" : "ADE";
 
   const name = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "Estudiante";
 
@@ -27,6 +44,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-5 min-w-0">
             <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
               <EdemLogo size="sm" showTagline={false} />
+              <span className="label-mono text-accent border border-accent/30 rounded-full px-2 py-0.5">{degree}</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               <Link href="/chat" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted hover:text-foreground hover:bg-surface-hover transition-colors">
